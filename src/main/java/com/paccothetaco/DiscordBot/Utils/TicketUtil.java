@@ -36,7 +36,8 @@ public class TicketUtil {
         String channelName = ticketType.name().toLowerCase() + "-" + event.getUser().getId();
         TextChannel textChannel = event.getGuild().createTextChannel(channelName)
                 .setParent(ticketCategory)
-                .addPermissionOverride(event.getGuild().getPublicRole(), 0, 1024) // Set appropriate permissions
+                .addPermissionOverride(event.getGuild().getPublicRole(), 0, 1024) // Set appropriate permissions for @everyone
+                .addPermissionOverride(event.getMember(), 3072, 0) // Allow the ticket creator to view and send messages
                 .complete();
 
         // Create the embed

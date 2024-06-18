@@ -39,52 +39,68 @@ public class CloseTicketButton {
             return;
         }
 
-        // Remove all components (buttons) from the original message
-        event.getInteraction().getMessage().editMessageComponents().queue();
+        // Extrahiere die User-ID aus dem Kanalnamen
+        String[] nameParts = textChannel.getName().split("-");
+        String userId = nameParts.length > 1 ? nameParts[1] : null;
+        String userMention = userId != null ? "<@" + userId + ">" : "unknown user";
 
+        // Bestätige die Interaktion und lösche die ursprüngliche Nachricht
+        event.deferEdit().queue();
+        event.getMessage().delete().queue();
+
+        // Baue das Embed für das geschlossene Ticket
         EmbedBuilder embedBuilder = new EmbedBuilder()
-                .setTitle("Ticket")
+                .setTitle("Closed " + textChannel.getName().split("-")[0] + " Ticket")
                 .setColor(Color.RED)
-                .setFooter("by paccothetaco.com")
-                .setDescription("The Ticket is closed");
+                .setDescription("Ticket created by: " + userMention + "\n" +
+                        "Ticket closed by: " + member.getAsMention())
+                .setFooter("by paccothetaco.com");
+
         textChannel.sendMessageEmbeds(embedBuilder.build()).queue();
 
-        String[] nameParts = textChannel.getName().split("-");
         String newName = "closed-" + String.join("-", nameParts);
 
         textChannel.getManager().setName(newName).queue(success -> {
-            // Check if the closed ticket category exists, if not, create it
+            // Überprüfe, ob die Kategorie für geschlossene Tickets existiert, falls nicht, erstelle sie
             String closedTicketCategoryId = dataManager.getClosedTicketCategory(guild.getId());
-            Category closedTicketsCategory = null;
             if (closedTicketCategoryId == null) {
-                closedTicketsCategory = guild.createCategory("Closed-Tickets").complete();
-                dataManager.setClosedTicketCategory(guild.getId(), closedTicketsCategory.getId());
-            } else {
-                closedTicketsCategory = guild.getCategoryById(closedTicketCategoryId);
-                if (closedTicketsCategory == null) {
-                    closedTicketsCategory = guild.createCategory("Closed-Tickets").complete();
+                guild.createCategory("Closed-Tickets").queue(closedTicketsCategory -> {
                     dataManager.setClosedTicketCategory(guild.getId(), closedTicketsCategory.getId());
+                    moveToClosedCategory(textChannel, closedTicketsCategory, event, modRole);
+                });
+            } else {
+                Category closedTicketsCategory = guild.getCategoryById(closedTicketCategoryId);
+                if (closedTicketsCategory == null) {
+                    guild.createCategory("Closed-Tickets").queue(newClosedTicketsCategory -> {
+                        dataManager.setClosedTicketCategory(guild.getId(), newClosedTicketsCategory.getId());
+                        moveToClosedCategory(textChannel, newClosedTicketsCategory, event, modRole);
+                    });
+                } else {
+                    moveToClosedCategory(textChannel, closedTicketsCategory, event, modRole);
                 }
             }
-
-            // Move the text channel to the closed tickets category
-            if (closedTicketsCategory != null) {
-                textChannel.getManager().setParent(closedTicketsCategory).queue(success2 -> {
-                    // Remove all permission overrides for the channel
-                    textChannel.getMemberPermissionOverrides().forEach(permissionOverride -> permissionOverride.delete().queue());
-
-                    // If modRole is null, ping @everyone with the message
-                    if (modRole == null) {
-                        textChannel.sendMessage("@everyone The moderator role is not set!").queue();
-                    }
-                }, error -> {
-                    // Handle errors when setting the parent category
-                    event.reply("Failed to move the ticket to the closed category.").setEphemeral(true).queue();
-                });
-            }
         }, error -> {
-            // Handle errors when renaming the channel
-            event.reply("Failed to rename the ticket channel.").setEphemeral(true).queue();
+            // Fehler beim Umbenennen des Kanals behandeln
+            event.getHook().sendMessage("Failed to rename the ticket channel.").setEphemeral(true).queue();
+        });
+    }
+
+    private static void moveToClosedCategory(TextChannel textChannel, Category closedTicketsCategory, ButtonInteractionEvent event, Role modRole) {
+        // Verschiebe den Textkanal in die Kategorie für geschlossene Tickets
+        textChannel.getManager().setParent(closedTicketsCategory).queue(success2 -> {
+            // Entferne alle Berechtigungsüberschreibungen für den Kanal
+            textChannel.getMemberPermissionOverrides().forEach(permissionOverride -> permissionOverride.delete().queue());
+
+            // Falls modRole null ist, ping @everyone mit der Nachricht
+            if (modRole == null) {
+                textChannel.sendMessage("@everyone The moderator role is not set!").queue();
+            }
+
+            // Antworte auf die Interaktion, dass das Ticket erfolgreich geschlossen wurde
+            event.getHook().sendMessage("Ticket successfully closed.").setEphemeral(true).queue();
+        }, error -> {
+            // Fehler beim Setzen der übergeordneten Kategorie behandeln
+            event.getHook().sendMessage("Failed to move the ticket to the closed category.").setEphemeral(true).queue();
         });
     }
 }
