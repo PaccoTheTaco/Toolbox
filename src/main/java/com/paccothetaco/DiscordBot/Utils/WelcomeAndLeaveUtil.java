@@ -8,27 +8,38 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CommandUtil extends ListenerAdapter {
+public class WelcomeAndLeaveUtil extends ListenerAdapter {
     private final String dataFilePath = "serverData.txt";
     private Map<String, String> welcomeChannels = new HashMap<>();
     private Map<String, String> leaveChannels = new HashMap<>();
+    private Map<String, Boolean> welcomeActive = new HashMap<>();
+    private Map<String, Boolean> leaveActive = new HashMap<>();
 
-    public CommandUtil() {
+    public WelcomeAndLeaveUtil() {
         loadChannelData();
     }
 
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
+        String guildId = event.getGuild().getId();
         if (event.getName().equals("setwelcomechannel")) {
             String channelId = event.getOption("channel").getAsString();
-            welcomeChannels.put(event.getGuild().getId(), channelId);
+            welcomeChannels.put(guildId, channelId);
             saveChannelData();
             event.reply("Welcome channel set to <#" + channelId + ">").queue();
         } else if (event.getName().equals("setleavechannel")) {
             String channelId = event.getOption("channel").getAsString();
-            leaveChannels.put(event.getGuild().getId(), channelId);
+            leaveChannels.put(guildId, channelId);
             saveChannelData();
             event.reply("Leave channel set to <#" + channelId + ">").queue();
+        } else if (event.getName().equals("deactivatewelcome")) {
+            welcomeActive.put(guildId, false);
+            saveChannelData();
+            event.reply("Welcome messages deactivated for this server.").queue();
+        } else if (event.getName().equals("deactivateleave")) {
+            leaveActive.put(guildId, false);
+            saveChannelData();
+            event.reply("Leave messages deactivated for this server.").queue();
         }
     }
 
@@ -37,9 +48,11 @@ public class CommandUtil extends ListenerAdapter {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(" ");
-                if (parts.length == 3) {
+                if (parts.length == 5) {
                     welcomeChannels.put(parts[0], parts[1]);
                     leaveChannels.put(parts[0], parts[2]);
+                    welcomeActive.put(parts[0], Boolean.parseBoolean(parts[3]));
+                    leaveActive.put(parts[0], Boolean.parseBoolean(parts[4]));
                 }
             }
         } catch (IOException e) {
@@ -52,7 +65,9 @@ public class CommandUtil extends ListenerAdapter {
             for (String guildId : welcomeChannels.keySet()) {
                 String welcomeChannelId = welcomeChannels.get(guildId);
                 String leaveChannelId = leaveChannels.get(guildId);
-                writer.write(guildId + " " + welcomeChannelId + " " + leaveChannelId + "\n");
+                boolean isWelcomeActive = welcomeActive.getOrDefault(guildId, true);
+                boolean isLeaveActive = leaveActive.getOrDefault(guildId, true);
+                writer.write(guildId + " " + welcomeChannelId + " " + leaveChannelId + " " + isWelcomeActive + " " + isLeaveActive + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -65,5 +80,13 @@ public class CommandUtil extends ListenerAdapter {
 
     public String getLeaveChannelId(String guildId) {
         return leaveChannels.get(guildId);
+    }
+
+    public boolean isWelcomeActive(String guildId) {
+        return welcomeActive.getOrDefault(guildId, true);
+    }
+
+    public boolean isLeaveActive(String guildId) {
+        return leaveActive.getOrDefault(guildId, true);
     }
 }
