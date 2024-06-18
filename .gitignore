@@ -13,3 +13,4 @@ target/
 *.ipr
 
 SecretUtil.java
+serverData.txt
