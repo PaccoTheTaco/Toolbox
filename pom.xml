@@ -20,27 +20,17 @@
             <artifactId>JDA</artifactId>
             <version>5.0.0-beta.24</version>
         </dependency>
-        <!-- SLF4J API -->
+        <!-- Add SLF4J API dependency -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>2.0.7</version>
         </dependency>
-
-        <!-- Logback Classic as SLF4J Implementation -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.4.12</version>
-        </dependency>
-
-        <!-- Optional: SLF4J NOP (to disable fallback logger) -->
+        <!-- Add SLF4J Simple binding dependency -->
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>2.0.7</version>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.0-alpha5</version>
         </dependency>
-
     </dependencies>
-
 </project>

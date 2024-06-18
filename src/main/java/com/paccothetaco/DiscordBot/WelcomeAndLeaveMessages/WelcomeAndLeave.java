@@ -1,6 +1,5 @@
-package com.paccothetaco.DiscordBot;
+package com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages;
 
-import com.paccothetaco.DiscordBot.Utils.WelcomeAndLeaveUtil;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -12,7 +11,7 @@ import java.awt.*;
 import java.util.Random;
 
 public class WelcomeAndLeave extends ListenerAdapter {
-    private WelcomeAndLeaveUtil welcomeAndLeaveUtil;
+    private ChannelDataManager channelDataManager;
     private String[] welcomeMessages = {
             "Hey %s, great to have you here!",
             "Hello %s, we're glad you found your way here.",
@@ -24,15 +23,15 @@ public class WelcomeAndLeave extends ListenerAdapter {
             "Hey %s, we've been waiting for you!"
     };
 
-    public WelcomeAndLeave(WelcomeAndLeaveUtil welcomeAndLeaveUtil) {
-        this.welcomeAndLeaveUtil = welcomeAndLeaveUtil;
+    public WelcomeAndLeave(ChannelDataManager channelDataManager) {
+        this.channelDataManager = channelDataManager;
     }
 
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        if (!welcomeAndLeaveUtil.isWelcomeActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isWelcomeActive(event.getGuild().getId())) return;
 
-        String welcomeChannelId = welcomeAndLeaveUtil.getWelcomeChannelId(event.getGuild().getId());
+        String welcomeChannelId = channelDataManager.getWelcomeChannelId(event.getGuild().getId());
         if (welcomeChannelId != null) {
             TextChannel welcomeChannel = event.getGuild().getTextChannelById(welcomeChannelId);
             if (welcomeChannel != null) {
@@ -53,9 +52,9 @@ public class WelcomeAndLeave extends ListenerAdapter {
 
     @Override
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
-        if (!welcomeAndLeaveUtil.isLeaveActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isLeaveActive(event.getGuild().getId())) return;
 
-        String leaveChannelId = welcomeAndLeaveUtil.getLeaveChannelId(event.getGuild().getId());
+        String leaveChannelId = channelDataManager.getLeaveChannelId(event.getGuild().getId());
         if (leaveChannelId != null) {
             TextChannel leaveChannel = event.getGuild().getTextChannelById(leaveChannelId);
             if (leaveChannel != null) {
