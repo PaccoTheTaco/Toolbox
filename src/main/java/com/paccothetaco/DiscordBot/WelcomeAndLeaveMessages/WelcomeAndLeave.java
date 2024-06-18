@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages;
 
+import com.paccothetaco.DiscordBot.DataManager;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -11,7 +12,7 @@ import java.awt.*;
 import java.util.Random;
 
 public class WelcomeAndLeave extends ListenerAdapter {
-    private ChannelDataManager channelDataManager;
+    private DataManager channelDataManager;
     private String[] welcomeMessages = {
             "Hey %s, great to have you here!",
             "Hello %s, we're glad you found your way here.",
@@ -23,7 +24,7 @@ public class WelcomeAndLeave extends ListenerAdapter {
             "Hey %s, we've been waiting for you!"
     };
 
-    public WelcomeAndLeave(ChannelDataManager channelDataManager) {
+    public WelcomeAndLeave(DataManager channelDataManager) {
         this.channelDataManager = channelDataManager;
     }
 
