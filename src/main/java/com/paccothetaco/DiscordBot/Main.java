@@ -2,7 +2,6 @@ package com.paccothetaco.DiscordBot;
 
 import com.paccothetaco.DiscordBot.Utils.CommandUtil;
 import com.paccothetaco.DiscordBot.Utils.SecretUtil;
-import com.paccothetaco.DiscordBot.Logsystem.MessageLog;
 import com.paccothetaco.DiscordBot.Logsystem.LogListener;
 import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
@@ -30,17 +29,16 @@ public class Main {
 
     public static void startBot() {
         DataManager dataManager = new DataManager();
-        MessageLog messageLog = new MessageLog(dataManager);
-        LogListener logListener = new LogListener(messageLog);
-        CommandUtil commandUtil = new CommandUtil(dataManager, messageLog);
+        CommandUtil commandUtil = new CommandUtil(dataManager);
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT) // Enable MESSAGE_CONTENT intent
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES) // Enable MESSAGE_CONTENT and GUILD_VOICE_STATES intent
                     .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
-                    .addEventListeners(commandUtil, new WelcomeAndLeave(dataManager), logListener,
-                            new ButtonInteractListener(dataManager), new SelectMenuInteractListener(dataManager))
+                    .addEventListeners(commandUtil, new WelcomeAndLeave(dataManager),
+                            new ButtonInteractListener(dataManager), new SelectMenuInteractListener(dataManager),
+                            new LogListener(dataManager)) // LogListener hinzufügen
                     .build()
                     .awaitReady();
 
@@ -55,6 +53,9 @@ public class Main {
                     Commands.slash("messagelogchannel", "Set the message log channel")
                             .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as message log channel", true)),
                     Commands.slash("deactivatemessagelog", "Deactivate message logging for this server"),
+                    Commands.slash("setvoicechannellog", "Set the voice channel log")
+                            .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as voice channel log", true)),
+                    Commands.slash("deactivatevoicechannellog", "Deactivate voice channel logging for this server"),
                     Commands.slash("ticketembed", "Send the ticket embed"),
                     Commands.slash("ticketcategory", "Set the ticket category")
                             .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for tickets", true)),

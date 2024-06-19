@@ -1,136 +1,213 @@
 package com.paccothetaco.DiscordBot;
 
-import java.io.*;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class DataManager {
-    private final String dataFilePath = "serverData.txt";
-    private Map<String, String> welcomeChannels = new HashMap<>();
-    private Map<String, String> leaveChannels = new HashMap<>();
-    private Map<String, Boolean> welcomeActive = new HashMap<>();
-    private Map<String, Boolean> leaveActive = new HashMap<>();
-    private Map<String, String> ticketCategories = new HashMap<>();
-    private Map<String, String> closedTicketCategories = new HashMap<>();
-    private Map<String, String> modRoles = new HashMap<>();
-    private Map<String, String> logChannels = new HashMap<>();
+    private final String dataFilePath = "src/main/java/com/paccothetaco/DiscordBot/serverData.json";
+    private Map<String, ServerData> serverDataMap = new HashMap<>();
 
     public DataManager() {
+        createDataFile();
         loadChannelData();
     }
 
+    private void createDataFile() {
+        File file = new File(dataFilePath);
+        if (!file.exists()) {
+            try {
+                File parentDir = file.getParentFile();
+                if (!parentDir.exists()) {
+                    parentDir.mkdirs();
+                }
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void setWelcomeChannel(String guildId, String channelId) {
-        welcomeChannels.put(guildId, channelId);
+        getServerData(guildId).setWelcomeChannelId(channelId);
         saveChannelData();
     }
 
     public void setLeaveChannel(String guildId, String channelId) {
-        leaveChannels.put(guildId, channelId);
+        getServerData(guildId).setLeaveChannelId(channelId);
         saveChannelData();
     }
 
     public void setWelcomeActive(String guildId, boolean isActive) {
-        welcomeActive.put(guildId, isActive);
+        getServerData(guildId).setWelcomeActive(isActive);
         saveChannelData();
     }
 
     public void setLeaveActive(String guildId, boolean isActive) {
-        leaveActive.put(guildId, isActive);
+        getServerData(guildId).setLeaveActive(isActive);
         saveChannelData();
     }
 
     public String getWelcomeChannelId(String guildId) {
-        return welcomeChannels.get(guildId);
+        return getServerData(guildId).getWelcomeChannelId();
     }
 
     public String getLeaveChannelId(String guildId) {
-        return leaveChannels.get(guildId);
+        return getServerData(guildId).getLeaveChannelId();
     }
 
     public boolean isWelcomeActive(String guildId) {
-        return welcomeActive.getOrDefault(guildId, true);
+        return getServerData(guildId).isWelcomeActive();
     }
 
     public boolean isLeaveActive(String guildId) {
-        return leaveActive.getOrDefault(guildId, true);
+        return getServerData(guildId).isLeaveActive();
     }
 
     public void setTicketCategory(String guildId, String categoryId) {
-        ticketCategories.put(guildId, categoryId);
+        getServerData(guildId).setTicketCategoryId(categoryId);
         saveChannelData();
     }
 
     public String getTicketCategory(String guildId) {
-        return ticketCategories.get(guildId);
+        return getServerData(guildId).getTicketCategoryId();
     }
 
     public void setClosedTicketCategory(String guildId, String categoryId) {
-        closedTicketCategories.put(guildId, categoryId);
+        getServerData(guildId).setClosedTicketCategoryId(categoryId);
         saveChannelData();
     }
 
     public String getClosedTicketCategory(String guildId) {
-        return closedTicketCategories.get(guildId);
+        return getServerData(guildId).getClosedTicketCategoryId();
     }
 
     public void setModRole(String guildId, String roleId) {
-        modRoles.put(guildId, roleId);
+        getServerData(guildId).setModRoleId(roleId);
         saveChannelData();
     }
 
     public String getModRole(String guildId) {
-        return modRoles.get(guildId);
+        return getServerData(guildId).getModRoleId();
     }
 
-    public void setLogChannel(String guildId, String channelId) {
-        logChannels.put(guildId, channelId);
+    public void setMessageLogChannel(String guildId, String channelId) {
+        getServerData(guildId).setMessageLogChannelId(channelId);
         saveChannelData();
     }
 
-    public String getLogChannel(String guildId) {
-        return logChannels.get(guildId);
+    public void deactivateMessageLog(String guildId) {
+        getServerData(guildId).setMessageLogChannelId(null);
+        saveChannelData();
+    }
+
+    public String getMessageLogChannel(String guildId) {
+        return getServerData(guildId).getMessageLogChannelId();
+    }
+
+    private ServerData getServerData(String guildId) {
+        return serverDataMap.computeIfAbsent(guildId, k -> new ServerData());
     }
 
     private void loadChannelData() {
-        try (BufferedReader reader = new BufferedReader(new FileReader(dataFilePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(" ");
-                if (parts.length >= 9) {
-                    welcomeChannels.put(parts[0], parts[1]);
-                    leaveChannels.put(parts[0], parts[2]);
-                    welcomeActive.put(parts[0], Boolean.parseBoolean(parts[3]));
-                    leaveActive.put(parts[0], Boolean.parseBoolean(parts[4]));
-                    ticketCategories.put(parts[0], parts[5]);
-                    closedTicketCategories.put(parts[0], parts[6]);
-                    modRoles.put(parts[0], parts[7]);
-                    logChannels.put(parts[0], parts[8]);
-                }
+        ObjectMapper mapper = new ObjectMapper();
+        File file = new File(dataFilePath);
+        if (file.exists() && file.length() > 0) { // Check if file exists and is not empty
+            try {
+                serverDataMap = mapper.readValue(file, new TypeReference<Map<String, ServerData>>() {});
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+        }
+    }
+
+    private void saveChannelData() {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            mapper.writeValue(new File(dataFilePath), serverDataMap);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveChannelData() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(dataFilePath))) {
-            for (String guildId : welcomeChannels.keySet()) {
-                String welcomeChannelId = welcomeChannels.get(guildId);
-                String leaveChannelId = leaveChannels.get(guildId);
-                boolean isWelcomeActive = welcomeActive.getOrDefault(guildId, true);
-                boolean isLeaveActive = leaveActive.getOrDefault(guildId, true);
-                String ticketCategoryId = ticketCategories.get(guildId);
-                String closedTicketCategoryId = closedTicketCategories.get(guildId);
-                String modRoleId = modRoles.get(guildId);
-                String logChannelId = logChannels.get(guildId);
-                writer.write(guildId + " " + welcomeChannelId + " " + leaveChannelId + " " + isWelcomeActive + " " + isLeaveActive + " "
-                        + (ticketCategoryId != null ? ticketCategoryId : "null") + " "
-                        + (closedTicketCategoryId != null ? closedTicketCategoryId : "null") + " "
-                        + (modRoleId != null ? modRoleId : "null") + " "
-                        + (logChannelId != null ? logChannelId : "null") + "\n");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    private static class ServerData {
+        private String welcomeChannelId;
+        private String leaveChannelId;
+        private boolean welcomeActive = true;
+        private boolean leaveActive = true;
+        private String ticketCategoryId;
+        private String closedTicketCategoryId;
+        private String modRoleId;
+        private String messageLogChannelId;
+
+        // Getter und Setter Methoden
+
+        public String getWelcomeChannelId() {
+            return welcomeChannelId;
+        }
+
+        public void setWelcomeChannelId(String welcomeChannelId) {
+            this.welcomeChannelId = welcomeChannelId;
+        }
+
+        public String getLeaveChannelId() {
+            return leaveChannelId;
+        }
+
+        public void setLeaveChannelId(String leaveChannelId) {
+            this.leaveChannelId = leaveChannelId;
+        }
+
+        public boolean isWelcomeActive() {
+            return welcomeActive;
+        }
+
+        public void setWelcomeActive(boolean welcomeActive) {
+            this.welcomeActive = welcomeActive;
+        }
+
+        public boolean isLeaveActive() {
+            return leaveActive;
+        }
+
+        public void setLeaveActive(boolean leaveActive) {
+            this.leaveActive = leaveActive;
+        }
+
+        public String getTicketCategoryId() {
+            return ticketCategoryId;
+        }
+
+        public void setTicketCategoryId(String ticketCategoryId) {
+            this.ticketCategoryId = ticketCategoryId;
+        }
+
+        public String getClosedTicketCategoryId() {
+            return closedTicketCategoryId;
+        }
+
+        public void setClosedTicketCategoryId(String closedTicketCategoryId) {
+            this.closedTicketCategoryId = closedTicketCategoryId;
+        }
+
+        public String getModRoleId() {
+            return modRoleId;
+        }
+
+        public void setModRoleId(String modRoleId) {
+            this.modRoleId = modRoleId;
+        }
+
+        public String getMessageLogChannelId() {
+            return messageLogChannelId;
+        }
+
+        public void setMessageLogChannelId(String messageLogChannelId) {
+            this.messageLogChannelId = messageLogChannelId;
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.paccothetaco.DiscordBot.Utils;
 
 import com.paccothetaco.DiscordBot.DataManager;
-import com.paccothetaco.DiscordBot.Logsystem.MessageLog;
 import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketEmbedCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -9,11 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 public class CommandUtil extends ListenerAdapter {
     private final DataManager dataManager;
-    private final MessageLog messageLog;
 
-    public CommandUtil(DataManager dataManager, MessageLog messageLog) {
+    public CommandUtil(DataManager dataManager) {
         this.dataManager = dataManager;
-        this.messageLog = messageLog;
     }
 
     @Override
@@ -38,15 +35,6 @@ public class CommandUtil extends ListenerAdapter {
                 dataManager.setLeaveActive(guildId, false);
                 event.reply("Leave messages deactivated for this server.").queue();
             }
-            case "messagelogchannel" -> {
-                String channelId = event.getOption("channel").getAsString();
-                messageLog.setLogChannel(guildId, channelId);
-                event.reply("Message log channel set to <#" + channelId + ">").queue();
-            }
-            case "deactivatemessagelog" -> {
-                messageLog.deactivateLog(guildId);
-                event.reply("Message logging deactivated for this server.").queue();
-            }
             case "ticketembed" -> TicketEmbedCommand.execute(event);
             case "ticketcategory" -> {
                 String categoryId = event.getOption("category").getAsString();
@@ -62,6 +50,15 @@ public class CommandUtil extends ListenerAdapter {
                 String roleId = event.getOption("modrole").getAsString();
                 dataManager.setModRole(guildId, roleId);
                 event.reply("Moderator role set to <@&" + roleId + ">").queue();
+            }
+            case "messagelogchannel" -> {
+                String channelId = event.getOption("channel").getAsString();
+                dataManager.setMessageLogChannel(guildId, channelId);
+                event.reply("Message log channel set to <#" + channelId + ">").queue();
+            }
+            case "deactivatemessagelog" -> {
+                dataManager.deactivateMessageLog(guildId);
+                event.reply("Message logging deactivated for this server.").queue();
             }
             default -> event.reply("This command doesn't exist").setEphemeral(true).queue();
         }
