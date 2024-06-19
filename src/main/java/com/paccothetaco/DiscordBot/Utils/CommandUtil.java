@@ -60,6 +60,15 @@ public class CommandUtil extends ListenerAdapter {
                 dataManager.deactivateMessageLog(guildId);
                 event.reply("Message logging deactivated for this server.").queue();
             }
+            case "setvoicechannellog" -> {
+                String channelId = event.getOption("channel").getAsString();
+                dataManager.setVoiceLogChannel(guildId, channelId);
+                event.reply("Voice log channel set to <#" + channelId + ">").queue();
+            }
+            case "deactivatevoicechannellog" -> {
+                dataManager.deactivateVoiceLog(guildId);
+                event.reply("Voice logging deactivated for this server.").queue();
+            }
             default -> event.reply("This command doesn't exist").setEphemeral(true).queue();
         }
     }

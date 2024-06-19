@@ -33,7 +33,7 @@ public class Main {
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES) // Enable MESSAGE_CONTENT and GUILD_VOICE_STATES intent
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES)
                     .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(commandUtil, new WelcomeAndLeave(dataManager),

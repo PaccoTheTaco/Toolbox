@@ -109,6 +109,20 @@ public class DataManager {
         return getServerData(guildId).getMessageLogChannelId();
     }
 
+    public void setVoiceLogChannel(String guildId, String channelId) {
+        getServerData(guildId).setVoiceLogChannelId(channelId);
+        saveChannelData();
+    }
+
+    public void deactivateVoiceLog(String guildId) {
+        getServerData(guildId).setVoiceLogChannelId(null);
+        saveChannelData();
+    }
+
+    public String getVoiceLogChannel(String guildId) {
+        return getServerData(guildId).getVoiceLogChannelId();
+    }
+
     private ServerData getServerData(String guildId) {
         return serverDataMap.computeIfAbsent(guildId, k -> new ServerData());
     }
@@ -143,8 +157,7 @@ public class DataManager {
         private String closedTicketCategoryId;
         private String modRoleId;
         private String messageLogChannelId;
-
-        // Getter und Setter Methoden
+        private String voiceLogChannelId;
 
         public String getWelcomeChannelId() {
             return welcomeChannelId;
@@ -208,6 +221,14 @@ public class DataManager {
 
         public void setMessageLogChannelId(String messageLogChannelId) {
             this.messageLogChannelId = messageLogChannelId;
+        }
+
+        public String getVoiceLogChannelId() {
+            return voiceLogChannelId;
+        }
+
+        public void setVoiceLogChannelId(String voiceLogChannelId) {
+            this.voiceLogChannelId = voiceLogChannelId;
         }
     }
 }
