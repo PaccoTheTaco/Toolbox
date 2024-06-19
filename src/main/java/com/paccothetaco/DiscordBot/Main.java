@@ -30,7 +30,7 @@ public class Main {
 
     public static void startBot() {
         DataManager dataManager = new DataManager();
-        MessageLog messageLog = new MessageLog();
+        MessageLog messageLog = new MessageLog(dataManager);
         LogListener logListener = new LogListener(messageLog);
         CommandUtil commandUtil = new CommandUtil(dataManager, messageLog);
 

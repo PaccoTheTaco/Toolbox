@@ -13,6 +13,7 @@ public class DataManager {
     private Map<String, String> ticketCategories = new HashMap<>();
     private Map<String, String> closedTicketCategories = new HashMap<>();
     private Map<String, String> modRoles = new HashMap<>();
+    private Map<String, String> logChannels = new HashMap<>();
 
     public DataManager() {
         loadChannelData();
@@ -81,21 +82,29 @@ public class DataManager {
         return modRoles.get(guildId);
     }
 
+    public void setLogChannel(String guildId, String channelId) {
+        logChannels.put(guildId, channelId);
+        saveChannelData();
+    }
+
+    public String getLogChannel(String guildId) {
+        return logChannels.get(guildId);
+    }
+
     private void loadChannelData() {
         try (BufferedReader reader = new BufferedReader(new FileReader(dataFilePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split(" ");
-                if (parts.length >= 5) {
+                if (parts.length >= 9) {
                     welcomeChannels.put(parts[0], parts[1]);
                     leaveChannels.put(parts[0], parts[2]);
                     welcomeActive.put(parts[0], Boolean.parseBoolean(parts[3]));
                     leaveActive.put(parts[0], Boolean.parseBoolean(parts[4]));
-                    if (parts.length >= 8) {
-                        ticketCategories.put(parts[0], parts[5]);
-                        closedTicketCategories.put(parts[0], parts[6]);
-                        modRoles.put(parts[0], parts[7]);
-                    }
+                    ticketCategories.put(parts[0], parts[5]);
+                    closedTicketCategories.put(parts[0], parts[6]);
+                    modRoles.put(parts[0], parts[7]);
+                    logChannels.put(parts[0], parts[8]);
                 }
             }
         } catch (IOException e) {
@@ -113,10 +122,12 @@ public class DataManager {
                 String ticketCategoryId = ticketCategories.get(guildId);
                 String closedTicketCategoryId = closedTicketCategories.get(guildId);
                 String modRoleId = modRoles.get(guildId);
+                String logChannelId = logChannels.get(guildId);
                 writer.write(guildId + " " + welcomeChannelId + " " + leaveChannelId + " " + isWelcomeActive + " " + isLeaveActive + " "
                         + (ticketCategoryId != null ? ticketCategoryId : "null") + " "
                         + (closedTicketCategoryId != null ? closedTicketCategoryId : "null") + " "
-                        + (modRoleId != null ? modRoleId : "null") + "\n");
+                        + (modRoleId != null ? modRoleId : "null") + " "
+                        + (logChannelId != null ? logChannelId : "null") + "\n");
             }
         } catch (IOException e) {
             e.printStackTrace();
