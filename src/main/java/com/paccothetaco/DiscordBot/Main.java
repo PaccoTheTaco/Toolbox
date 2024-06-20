@@ -62,7 +62,15 @@ public class Main {
                     Commands.slash("closedticketcategory", "Set the closed ticket category")
                             .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for closed tickets", true)),
                     Commands.slash("setmodrole", "Set the moderator role")
-                            .addOptions(new OptionData(OptionType.ROLE, "modrole", "The role to set for moderators", true))
+                            .addOptions(new OptionData(OptionType.ROLE, "modrole", "The role to set for moderators", true)),
+                    Commands.slash("ticketoption", "Activate or deactivate ticket options")
+                            .addOptions(new OptionData(OptionType.STRING, "action", "activate or deactivate", true)
+                                            .addChoice("activate", "activate")
+                                            .addChoice("deactivate", "deactivate"),
+                                    new OptionData(OptionType.STRING, "option", "The option to activate or deactivate", true)
+                                            .addChoice("support", "support")
+                                            .addChoice("report", "report")
+                                            .addChoice("application", "application"))
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

@@ -148,6 +148,16 @@ public class DataManager {
         }
     }
 
+    public void setTicketOption(String guildId, String option, boolean active) {
+        ServerData data = getServerData(guildId);
+        data.setTicketOption(option, active);
+        saveChannelData();
+    }
+
+    public Map<String, Boolean> getTicketOptions(String guildId) {
+        return getServerData(guildId).getTicketOptions();
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -158,6 +168,7 @@ public class DataManager {
         private String modRoleId;
         private String messageLogChannelId;
         private String voiceLogChannelId;
+        private Map<String, Boolean> ticketOptions = new HashMap<>();
 
         public String getWelcomeChannelId() {
             return welcomeChannelId;
@@ -230,5 +241,13 @@ public class DataManager {
         public void setVoiceLogChannelId(String voiceLogChannelId) {
             this.voiceLogChannelId = voiceLogChannelId;
         }
+        public void setTicketOption(String option, boolean active) {
+            ticketOptions.put(option, active);
+        }
+
+        public Map<String, Boolean> getTicketOptions() {
+            return ticketOptions;
+        }
+
     }
 }

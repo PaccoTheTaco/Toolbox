@@ -2,15 +2,20 @@ package com.paccothetaco.DiscordBot.Utils;
 
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketEmbedCommand;
+import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketOptionCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 public class CommandUtil extends ListenerAdapter {
     private final DataManager dataManager;
+    private final TicketEmbedCommand ticketEmbedCommand;
+    private final TicketOptionCommand ticketOptionCommand;
 
     public CommandUtil(DataManager dataManager) {
         this.dataManager = dataManager;
+        this.ticketEmbedCommand = new TicketEmbedCommand(dataManager);
+        this.ticketOptionCommand = new TicketOptionCommand(dataManager);
     }
 
     @Override
@@ -35,7 +40,7 @@ public class CommandUtil extends ListenerAdapter {
                 dataManager.setLeaveActive(guildId, false);
                 event.reply("Leave messages deactivated for this server.").queue();
             }
-            case "ticketembed" -> TicketEmbedCommand.execute(event);
+            case "ticketembed" -> ticketEmbedCommand.execute(event);
             case "ticketcategory" -> {
                 String categoryId = event.getOption("category").getAsString();
                 dataManager.setTicketCategory(guildId, categoryId);
@@ -69,6 +74,7 @@ public class CommandUtil extends ListenerAdapter {
                 dataManager.deactivateVoiceLog(guildId);
                 event.reply("Voice logging deactivated for this server.").queue();
             }
+            case "ticketoption" -> ticketOptionCommand.onSlashCommandInteraction(event);
             default -> event.reply("This command doesn't exist").setEphemeral(true).queue();
         }
     }
