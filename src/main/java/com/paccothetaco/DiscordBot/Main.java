@@ -29,7 +29,7 @@ public class Main {
 
         // Start the web server
         try {
-            Website.startServer();
+            Website.startServer(jda);
         } catch (Exception e) {
             e.printStackTrace();
         }
