@@ -1,37 +1,69 @@
 package com.paccothetaco.DiscordBot;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 
-import java.io.File;
-import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DataManager {
-    private final String dataFilePath = "src/main/java/com/paccothetaco/DiscordBot/serverData.json";
-    private Map<String, ServerData> serverDataMap = new HashMap<>();
     private List<DataChangeListener> listeners = new ArrayList<>();
 
-    public DataManager() {
-        createDataFile();
-        loadChannelData();
+    public void checkAndAddServerIDs(JDA jda) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true)";
+
+            for (Guild guild : jda.getGuilds()) {
+                String serverID = guild.getId();
+
+                try (PreparedStatement selectStmt = connection.prepareStatement(selectQuery)) {
+                    selectStmt.setString(1, serverID);
+                    try (ResultSet rs = selectStmt.executeQuery()) {
+                        if (rs.next() && rs.getInt(1) == 0) {
+                            try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                                insertStmt.setString(1, serverID);
+                                insertStmt.executeUpdate();
+                                System.out.println("Added server ID: " + serverID);
+                                notifyListeners(serverID);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void createDataFile() {
-        File file = new File(dataFilePath);
-        if (!file.exists()) {
-            try {
-                File parentDir = file.getParentFile();
-                if (!parentDir.exists()) {
-                    parentDir.mkdirs();
+    public void addServerOnJoin(Guild guild) {
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true)";
+
+            String serverID = guild.getId();
+
+            try (PreparedStatement selectStmt = connection.prepareStatement(selectQuery)) {
+                selectStmt.setString(1, serverID);
+                try (ResultSet rs = selectStmt.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) == 0) {
+                        try (PreparedStatement insertStmt = connection.prepareStatement(insertQuery)) {
+                            insertStmt.setString(1, serverID);
+                            insertStmt.executeUpdate();
+                            System.out.println("Added server ID: " + serverID);
+                            notifyListeners(serverID);
+                        }
+                    }
                 }
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 
@@ -50,29 +82,19 @@ public class DataManager {
     }
 
     public void setWelcomeChannel(String guildId, String channelId) {
-        System.out.println("Setting welcome channel to " + channelId);
-        getServerData(guildId).setWelcomeChannelId(channelId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "welcome_channel_ID", channelId);
     }
 
     public void setLeaveChannel(String guildId, String channelId) {
-        getServerData(guildId).setLeaveChannelId(channelId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "leave_channel_ID", channelId);
     }
 
     public void setWelcomeActive(String guildId, boolean isActive) {
-        System.out.println("Setting welcome active to " + isActive);
-        getServerData(guildId).setWelcomeActive(isActive);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "welcome_active", isActive);
     }
 
     public void setLeaveActive(String guildId, boolean isActive) {
-        getServerData(guildId).setLeaveActive(isActive);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "leave_active", isActive);
     }
 
     public String getWelcomeChannelId(String guildId) {
@@ -92,9 +114,7 @@ public class DataManager {
     }
 
     public void setTicketCategory(String guildId, String categoryId) {
-        getServerData(guildId).setTicketCategoryId(categoryId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "ticket_category_ID", categoryId);
     }
 
     public String getTicketCategory(String guildId) {
@@ -102,9 +122,7 @@ public class DataManager {
     }
 
     public void setClosedTicketCategory(String guildId, String categoryId) {
-        getServerData(guildId).setClosedTicketCategoryId(categoryId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "closed_ticket_category_ID", categoryId);
     }
 
     public String getClosedTicketCategory(String guildId) {
@@ -112,9 +130,7 @@ public class DataManager {
     }
 
     public void setModRole(String guildId, String roleId) {
-        getServerData(guildId).setModRoleId(roleId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "mod_role_ID", roleId);
     }
 
     public String getModRole(String guildId) {
@@ -122,15 +138,11 @@ public class DataManager {
     }
 
     public void setMessageLogChannel(String guildId, String channelId) {
-        getServerData(guildId).setMessageLogChannelId(channelId);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "message_log_channel_ID", channelId);
     }
 
     public void deactivateMessageLog(String guildId) {
-        getServerData(guildId).setMessageLogChannelId(null);
-        saveChannelData();
-        notifyListeners(guildId);
+        updateServerData(guildId, "message_log_channel_ID", null);
     }
 
     public String getMessageLogChannel(String guildId) {
@@ -141,52 +153,81 @@ public class DataManager {
         return getServerData(guildId).getVoiceLogChannelId();
     }
 
-    private ServerData getServerData(String guildId) {
-        return serverDataMap.computeIfAbsent(guildId, k -> new ServerData());
+    public void setTicketOption(String guildId, String option, boolean active) {
+        updateServerData(guildId, option + "_ticket_active", active);
     }
 
-    private void loadChannelData() {
-        ObjectMapper mapper = new ObjectMapper();
-        File file = new File(dataFilePath);
-        if (file.exists() && file.length() > 0) {
-            try {
-                serverDataMap = mapper.readValue(file, new TypeReference<Map<String, ServerData>>() {});
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+    public Map<String, Boolean> getTicketOptions(String guildId) {
+        Map<String, Boolean> ticketOptions = new HashMap<>();
+        ServerData serverData = getServerData(guildId);
+
+        ticketOptions.put("support", serverData.isSupportTicketActive());
+        ticketOptions.put("application", serverData.isApplicationTicketActive());
+        ticketOptions.put("report", serverData.isReportTicketActive());
+
+        return ticketOptions;
     }
 
-    private void saveChannelData() {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            mapper.writeValue(new File(dataFilePath), serverDataMap);
-        } catch (IOException e) {
+    private void updateServerData(String guildId, String column, Object value) {
+        String query = "UPDATE server_data SET " + column + " = ? WHERE Server_ID = ?";
+
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setObject(1, value);
+            stmt.setString(2, guildId);
+            stmt.executeUpdate();
+            notifyListeners(guildId);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void setTicketOption(String guildId, String option, boolean active) {
-        ServerData data = getServerData(guildId);
-        data.setTicketOption(option, active);
-        saveChannelData();
-    }
+    private ServerData getServerData(String guildId) {
+        ServerData serverData = new ServerData();
 
-    public Map<String, Boolean> getTicketOptions(String guildId) {
-        return getServerData(guildId).getTicketOptions();
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
+                    "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
+                    "support_ticket_active, application_ticket_active, report_ticket_active " +
+                    "FROM server_data WHERE Server_ID = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, guildId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        serverData.setWelcomeChannelId(rs.getString("welcome_channel_ID"));
+                        serverData.setLeaveChannelId(rs.getString("leave_channel_ID"));
+                        serverData.setWelcomeActive(rs.getBoolean("welcome_active"));
+                        serverData.setLeaveActive(rs.getBoolean("leave_active"));
+                        serverData.setTicketCategoryId(rs.getString("ticket_category_ID"));
+                        serverData.setClosedTicketCategoryId(rs.getString("closed_ticket_category_ID"));
+                        serverData.setModRoleId(rs.getString("mod_role_ID"));
+                        serverData.setMessageLogChannelId(rs.getString("message_log_channel_ID"));
+                        serverData.setSupportTicketActive(rs.getBoolean("support_ticket_active"));
+                        serverData.setApplicationTicketActive(rs.getBoolean("application_ticket_active"));
+                        serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return serverData;
     }
 
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
-        private boolean welcomeActive = true;
-        private boolean leaveActive = true;
+        private boolean welcomeActive;
+        private boolean leaveActive;
         private String ticketCategoryId;
         private String closedTicketCategoryId;
         private String modRoleId;
         private String messageLogChannelId;
         private String voiceLogChannelId;
-        private Map<String, Boolean> ticketOptions = new HashMap<>();
+        private boolean supportTicketActive;
+        private boolean applicationTicketActive;
+        private boolean reportTicketActive;
 
         public String getWelcomeChannelId() {
             return welcomeChannelId;
@@ -260,12 +301,28 @@ public class DataManager {
             this.voiceLogChannelId = voiceLogChannelId;
         }
 
-        public void setTicketOption(String option, boolean active) {
-            ticketOptions.put(option, active);
+        public boolean isSupportTicketActive() {
+            return supportTicketActive;
         }
 
-        public Map<String, Boolean> getTicketOptions() {
-            return ticketOptions;
+        public void setSupportTicketActive(boolean supportTicketActive) {
+            this.supportTicketActive = supportTicketActive;
+        }
+
+        public boolean isApplicationTicketActive() {
+            return applicationTicketActive;
+        }
+
+        public void setApplicationTicketActive(boolean applicationTicketActive) {
+            this.applicationTicketActive = applicationTicketActive;
+        }
+
+        public boolean isReportTicketActive() {
+            return reportTicketActive;
+        }
+
+        public void setReportTicketActive(boolean reportTicketActive) {
+            this.reportTicketActive = reportTicketActive;
         }
     }
 

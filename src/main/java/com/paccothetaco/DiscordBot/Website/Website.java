@@ -72,6 +72,23 @@ public class Website {
                     if (guild != null) {
                         String serverName = guild.getName();
                         String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
+                        String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
+                        String currentWelcomeChannelName = "--deactivated--";
+                        String currentLeaveChannelName = "--deactivated--";
+
+                        if (currentWelcomeChannelId != null) {
+                            TextChannel welcomeChannel = guild.getTextChannelById(currentWelcomeChannelId);
+                            if (welcomeChannel != null) {
+                                currentWelcomeChannelName = welcomeChannel.getName();
+                            }
+                        }
+
+                        if (currentLeaveChannelId != null) {
+                            TextChannel leaveChannel = guild.getTextChannelById(currentLeaveChannelId);
+                            if (leaveChannel != null) {
+                                currentLeaveChannelName = leaveChannel.getName();
+                            }
+                        }
 
                         resp.setContentType("text/html");
                         resp.setStatus(HttpServletResponse.SC_OK);
@@ -82,6 +99,13 @@ public class Website {
                         resp.getWriter().println("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
                         resp.getWriter().println("    <title>Settings - Configure Your Server</title>");
                         resp.getWriter().println("    <link rel=\"stylesheet\" href=\"style.css\">");
+                        resp.getWriter().println("    <style>");
+                        resp.getWriter().println("        .dropdown-menu { display: none; margin-top: 10px; }");
+                        resp.getWriter().println("        .dropdown-container { margin-bottom: 20px; }");
+                        resp.getWriter().println("        .channel-selection { display: flex; align-items: center; }");
+                        resp.getWriter().println("        .channel-selection span { margin-right: 10px; }");
+                        resp.getWriter().println("        .dropdown-button { margin-left: 10px; }");
+                        resp.getWriter().println("    </style>");
                         resp.getWriter().println("</head>");
                         resp.getWriter().println("<body>");
                         resp.getWriter().println("    <div class=\"burger-menu\" onclick=\"toggleSidebar()\">");
@@ -100,19 +124,43 @@ public class Website {
                         resp.getWriter().println("        <h1>Settings for " + serverName + "</h1>");
                         resp.getWriter().println("        <p>Here you can configure your Discord server settings.</p>");
                         resp.getWriter().println("        <form method=\"POST\" action=\"/settings\">");
-                        resp.getWriter().println("            <label for=\"welcomeChannel\">Select Welcome Channel:</label>");
-                        resp.getWriter().println("            <select name=\"welcomeChannel\" id=\"welcomeChannel\">");
-                        resp.getWriter().println("                <option value=\"none\">--deactivate--</option>");
 
+                        // Welcome Channel Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Welcome Channel:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"welcomeChannelText\">");
+                        resp.getWriter().println("                    <span>" + currentWelcomeChannelName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('welcomeChannel')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"welcomeChannelMenu\">");
+                        resp.getWriter().println("                    <select name=\"welcomeChannel\" id=\"welcomeChannel\">");
+                        resp.getWriter().println("                        <option value=\"none\">--deactivate--</option>");
                         for (TextChannel channel : guild.getTextChannels()) {
-                            String selected = channel.getId().equals(currentWelcomeChannelId) ? "selected" : "";
-                            try {resp.getWriter().println("<option value=\"" + channel.getId() + "\" " + selected + ">" + channel.getName() + "</option>");}
-                            catch (IOException e) {throw new RuntimeException(e);}
+                            resp.getWriter().println("                        <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
                         }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
 
-                        resp.getWriter().println("            </select>");
+                        // Leave Channel Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Leave Channel:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"leaveChannelText\">");
+                        resp.getWriter().println("                    <span>" + currentLeaveChannelName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('leaveChannel')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"leaveChannelMenu\">");
+                        resp.getWriter().println("                    <select name=\"leaveChannel\" id=\"leaveChannel\">");
+                        resp.getWriter().println("                        <option value=\"none\">--deactivate--</option>");
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            resp.getWriter().println("                        <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
+                        }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
                         resp.getWriter().println("            <input type=\"hidden\" name=\"guildId\" value=\"" + guildId + "\"/>");
-                        resp.getWriter().println("            <input type=\"hidden\" name=\"sessionKey\" value=\"" + sessionKey + "\"/>"); // Hier den sessionKey hinzufügen
+                        resp.getWriter().println("            <input type=\"hidden\" name=\"sessionKey\" value=\"" + sessionKey + "\"/>");
                         resp.getWriter().println("            <button type=\"submit\">Save</button>");
                         resp.getWriter().println("        </form>");
                         resp.getWriter().println("    </div>");
@@ -120,6 +168,15 @@ public class Website {
                         resp.getWriter().println("    <script>");
                         resp.getWriter().println("        function toggleSidebar() {");
                         resp.getWriter().println("            document.getElementById('sidebar').classList.toggle('open');");
+                        resp.getWriter().println("        }");
+
+                        resp.getWriter().println("        function toggleDropdown(channelType) {");
+                        resp.getWriter().println("            const menu = document.getElementById(channelType + 'Menu');");
+                        resp.getWriter().println("            if (menu.style.display === 'none' || menu.style.display === '') {");
+                        resp.getWriter().println("                menu.style.display = 'block';");
+                        resp.getWriter().println("            } else {");
+                        resp.getWriter().println("                menu.style.display = 'none';");
+                        resp.getWriter().println("            }");
                         resp.getWriter().println("        }");
                         resp.getWriter().println("    </script>");
                         resp.getWriter().println("</body>");
@@ -199,18 +256,32 @@ public class Website {
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String guildId = req.getParameter("guildId");
             String welcomeChannelId = req.getParameter("welcomeChannel");
+            String leaveChannelId = req.getParameter("leaveChannel");
             String sessionKey = req.getParameter("sessionKey");
 
             if ("none".equals(welcomeChannelId)) {
                 dataManager.setWelcomeActive(guildId, false);
+                dataManager.setWelcomeChannel(guildId, null);
             } else {
                 dataManager.setWelcomeChannel(guildId, welcomeChannelId);
                 dataManager.setWelcomeActive(guildId, true);
             }
+
+            if ("none".equals(leaveChannelId)) {
+                dataManager.setLeaveActive(guildId, false);
+                dataManager.setLeaveChannel(guildId, null);
+            } else {
+                dataManager.setLeaveChannel(guildId, leaveChannelId);
+                dataManager.setLeaveActive(guildId, true);
+            }
+
             dataManager.notifyListeners(guildId);
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
+
+
+
 
     public static class VerifyServlet extends HttpServlet {
         @Override

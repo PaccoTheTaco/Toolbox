@@ -10,6 +10,8 @@ import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -44,6 +46,12 @@ public class Main {
                     .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(
+                            new ListenerAdapter() {
+                                @Override
+                                public void onGuildJoin(GuildJoinEvent event) {
+                                    dataManager.addServerOnJoin(event.getGuild());
+                                }
+                            },
                             commandUtil,
                             new WelcomeAndLeave(dataManager),
                             new ButtonInteractListener(dataManager),
@@ -52,6 +60,8 @@ public class Main {
                     )
                     .build()
                     .awaitReady();
+
+            dataManager.checkAndAddServerIDs(jda);
 
             CommandListUpdateAction commands = jda.updateCommands();
             commands.addCommands(
