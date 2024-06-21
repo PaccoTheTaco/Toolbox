@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Configure Your Server</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="burger-menu" onclick="toggleSidebar()">
+    <div></div>
+    <div></div>
+    <div></div>
+</div>
+<div class="sidebar" id="sidebar">
+    <a href="Home.html">Home</a>
+    <a href="Socials.html">Socials</a>
+    <a href="#">Plugins</a>
+    <a href="#">Projects</a>
+    <a href="Settings.html">Settings</a>
+</div>
+<div class="content settings-content">
+    <h1>Settings Page</h1>
+    <p>Here you can configure your Discord server settings.</p>
+    <!-- Add your specific settings form or content here -->
+</div>
+<div class="bottom-bar"></div>
+
+<script>
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    // Extract the sessionkey from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionKey = urlParams.get('sk');
+    console.log("Session Key:", sessionKey);
+
+    // Use the session key to load specific settings or other data
+    // For demonstration purposes, you could dynamically update the page content
+    if (sessionKey) {
+        document.querySelector('.content').innerHTML += `<p>Session Key: ${sessionKey}</p>`;
+    }
+</script>
+</body>
+</html>

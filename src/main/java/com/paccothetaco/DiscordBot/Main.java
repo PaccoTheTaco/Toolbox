@@ -6,6 +6,7 @@ import com.paccothetaco.DiscordBot.Logsystem.LogListener;
 import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
+import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -25,6 +26,13 @@ public class Main {
     public static void main(String[] args) {
         startBot();
         setupActivityTimer();
+
+        // Start the web server
+        try {
+            Website.startServer();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void startBot() {
@@ -70,7 +78,10 @@ public class Main {
                                     new OptionData(OptionType.STRING, "option", "The option to activate or deactivate", true)
                                             .addChoice("support", "support")
                                             .addChoice("report", "report")
-                                            .addChoice("application", "application"))
+                                            .addChoice("application", "application")),
+                    Commands.slash("settings", "Open settings page"),
+                    Commands.slash("verify", "Verify admin status")
+                            .addOptions(new OptionData(OptionType.STRING, "sessionkey", "The session key to verify", true))
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

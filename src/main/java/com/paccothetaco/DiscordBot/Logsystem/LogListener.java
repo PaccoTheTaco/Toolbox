@@ -49,10 +49,4 @@ public class LogListener extends ListenerAdapter {
                 MessageLog.getAuthor(event.getMessageId()),
                 MessageLog.getContent(event.getMessageId()));
     }
-
-    @Override
-    public void onGuildVoiceUpdate(GuildVoiceUpdateEvent event) {
-        System.out.println("GuildVoiceUpdateEvent detected"); // Debug-Ausgabe
-        VoiceLog.onVoiceUpdate(event, dataManager);
-    }
 }

@@ -1,0 +1,150 @@
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    font-family: Arial, sans-serif;
+    font-size: 2rem;
+    background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);
+    overflow: hidden;
+    position: relative;
+    color: white;
+    text-align: center;
+}
+
+.burger-menu {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    cursor: pointer;
+    z-index: 3; /* Ensure the burger menu is above other elements */
+}
+
+.burger-menu div {
+    width: 100%;
+    height: 4px;
+    background-color: white;
+    transition: background-color 0.3s;
+}
+
+.burger-menu:hover div {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    transform: translateX(-250px);
+    transition: transform 0.3s ease;
+    z-index: 2; /* Ensure the sidebar is above other elements but below the burger menu */
+    display: flex;
+    flex-direction: column;
+    padding-top: 60px;
+}
+
+.sidebar.open {
+    transform: translateX(0);
+}
+
+.sidebar a {
+    padding: 15px 25px;
+    text-decoration: none;
+    color: white;
+    font-size: 1.2rem;
+    transition: background 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px; /* Adjust this value to control the roundness */
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    flex-grow: 1;
+    z-index: 1; /* Ensure the content is below the sidebar */
+    padding: 20px;
+    padding-top: 60px; /* Add some padding to move content down */
+    width: 100%;
+}
+
+h1 {
+    font-size: 3rem;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-image {
+    width: 300px;
+    height: auto;
+    margin: 20px;
+}
+
+.bottom-bar {
+    width: 100%;
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.socials-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding-top: 60px;
+    width: 100%;
+    color: white;
+}
+
+.social-link {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+}
+
+.social-link a {
+    text-decoration: none;
+    color: white;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.social-link img {
+    width: 50px;
+    height: 50px;
+    margin-right: 15px;
+}
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    flex-grow: 1;
+    z-index: 1; /* Ensure the content is below the sidebar */
+    padding: 20px;
+    padding-top: 60px; /* Add some padding to move content down */
+    width: 100%;
+    color: white;
+}
+
