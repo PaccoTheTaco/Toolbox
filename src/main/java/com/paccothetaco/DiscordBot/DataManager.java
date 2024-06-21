@@ -148,7 +148,7 @@ public class DataManager {
     private void loadChannelData() {
         ObjectMapper mapper = new ObjectMapper();
         File file = new File(dataFilePath);
-        if (file.exists() && file.length() > 0) { // Check if file exists and is not empty
+        if (file.exists() && file.length() > 0) {
             try {
                 serverDataMap = mapper.readValue(file, new TypeReference<Map<String, ServerData>>() {});
             } catch (IOException e) {

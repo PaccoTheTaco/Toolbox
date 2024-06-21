@@ -27,7 +27,6 @@ public class Main {
         startBot();
         setupActivityTimer();
 
-        // Start the web server
         try {
             Website.startServer(jda);
         } catch (Exception e) {

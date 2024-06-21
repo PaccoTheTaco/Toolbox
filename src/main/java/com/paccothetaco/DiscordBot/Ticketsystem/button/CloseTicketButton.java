@@ -39,16 +39,13 @@ public class CloseTicketButton {
             return;
         }
 
-        // Extrahiere die User-ID aus dem Kanalnamen
         String[] nameParts = textChannel.getName().split("-");
         String userId = nameParts.length > 1 ? nameParts[1] : null;
         String userMention = userId != null ? "<@" + userId + ">" : "unknown user";
 
-        // Bestätige die Interaktion und lösche die ursprüngliche Nachricht
         event.deferEdit().queue();
         event.getMessage().delete().queue();
 
-        // Baue das Embed für das geschlossene Ticket
         EmbedBuilder embedBuilder = new EmbedBuilder()
                 .setTitle("Closed " + textChannel.getName().split("-")[0] + " Ticket")
                 .setColor(Color.RED)
@@ -61,7 +58,6 @@ public class CloseTicketButton {
         String newName = "closed-" + String.join("-", nameParts);
 
         textChannel.getManager().setName(newName).queue(success -> {
-            // Überprüfe, ob die Kategorie für geschlossene Tickets existiert, falls nicht, erstelle sie
             String closedTicketCategoryId = dataManager.getClosedTicketCategory(guild.getId());
             if (closedTicketCategoryId == null) {
                 guild.createCategory("Closed-Tickets").queue(closedTicketsCategory -> {
@@ -80,26 +76,20 @@ public class CloseTicketButton {
                 }
             }
         }, error -> {
-            // Fehler beim Umbenennen des Kanals behandeln
             event.getHook().sendMessage("Failed to rename the ticket channel.").setEphemeral(true).queue();
         });
     }
 
     private static void moveToClosedCategory(TextChannel textChannel, Category closedTicketsCategory, ButtonInteractionEvent event, Role modRole) {
-        // Verschiebe den Textkanal in die Kategorie für geschlossene Tickets
         textChannel.getManager().setParent(closedTicketsCategory).queue(success2 -> {
-            // Entferne alle Berechtigungsüberschreibungen für den Kanal
             textChannel.getMemberPermissionOverrides().forEach(permissionOverride -> permissionOverride.delete().queue());
 
-            // Falls modRole null ist, ping @everyone mit der Nachricht
             if (modRole == null) {
                 textChannel.sendMessage("@everyone The moderator role is not set!").queue();
             }
 
-            // Antworte auf die Interaktion, dass das Ticket erfolgreich geschlossen wurde
             event.getHook().sendMessage("Ticket successfully closed.").setEphemeral(true).queue();
         }, error -> {
-            // Fehler beim Setzen der übergeordneten Kategorie behandeln
             event.getHook().sendMessage("Failed to move the ticket to the closed category.").setEphemeral(true).queue();
         });
     }

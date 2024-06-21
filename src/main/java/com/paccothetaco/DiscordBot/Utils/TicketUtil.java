@@ -19,7 +19,6 @@ public class TicketUtil {
         String guildId = event.getGuild().getId();
         String ticketCategoryId = dataManager.getTicketCategory(guildId);
 
-        // Check if the ticket category exists, if not, create it
         Category ticketCategory = null;
         if (ticketCategoryId == null) {
             ticketCategory = event.getGuild().createCategory("Tickets").complete();
@@ -32,15 +31,13 @@ public class TicketUtil {
             }
         }
 
-        // Create the ticket channel
         String channelName = ticketType.name().toLowerCase() + "-" + event.getUser().getId();
         TextChannel textChannel = event.getGuild().createTextChannel(channelName)
                 .setParent(ticketCategory)
-                .addPermissionOverride(event.getGuild().getPublicRole(), 0, 1024) // Set appropriate permissions for @everyone
-                .addPermissionOverride(event.getMember(), 3072, 0) // Allow the ticket creator to view and send messages
+                .addPermissionOverride(event.getGuild().getPublicRole(), 0, 1024)
+                .addPermissionOverride(event.getMember(), 3072, 0)
                 .complete();
 
-        // Create the embed
         EmbedBuilder embedBuilder = new EmbedBuilder();
         String title;
         String description = "";
@@ -80,15 +77,12 @@ public class TicketUtil {
         embedBuilder.setFooter("by paccothetaco.com");
         embedBuilder.setDescription(description + "\nA " + modMention + " will assist you shortly.\nTicket created by: " + mention);
 
-        // Send the embed in the channel with the close button
         textChannel.sendMessageEmbeds(embedBuilder.build())
                 .setActionRow(Button.danger("close-ticket", "Close Ticket"))
                 .queue();
 
-        // Ping the mod role if it exists
         if (modRole != null) {
             textChannel.sendMessage(modRole.getAsMention()).queue(message -> {
-                // Schedule the deletion of the message after 1 second
                 ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
                 scheduler.schedule(() -> message.delete().queue(), 1, TimeUnit.SECONDS);
             });

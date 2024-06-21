@@ -21,16 +21,15 @@ public class Website {
     private static Map<String, String> sessionKeys = new HashMap<>();
     private static Map<String, String> verifiedSessionKeys = new HashMap<>();
     private static JDA jda;
-    private static DataManager dataManager = new DataManager(); // Initialisiere DataManager
+    private static DataManager dataManager = new DataManager();
 
     public static void startServer(JDA jdaInstance) throws Exception {
-        jda = jdaInstance; // Store the JDA instance
+        jda = jdaInstance;
         Server server = new Server(8080);
 
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
 
-        // Set the resource base to the directory containing your HTML and CSS files
         String resourceBase = System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website";
         handler.setResourceBase(resourceBase);
         handler.addServlet(DefaultServlet.class, "/");
@@ -68,7 +67,6 @@ public class Website {
 
             if (guildId != null) {
                 if (Website.isSessionKeyVerified(sessionKey)) {
-                    // Fetch the Guild object using the stored JDA instance
                     Guild guild = jda.getGuildById(guildId);
 
                     if (guild != null) {
@@ -204,14 +202,12 @@ public class Website {
             String sessionKey = req.getParameter("sessionKey");
 
             if ("none".equals(welcomeChannelId)) {
-                // Deactivate welcome messages
                 dataManager.setWelcomeActive(guildId, false);
             } else {
-                // Set welcome channel
                 dataManager.setWelcomeChannel(guildId, welcomeChannelId);
                 dataManager.setWelcomeActive(guildId, true);
             }
-            dataManager.notifyListeners(guildId);  // Benachrichtige Listener nach einer Änderung
+            dataManager.notifyListeners(guildId);
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
@@ -219,7 +215,6 @@ public class Website {
     public static class VerifyServlet extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-            // No implementation needed, verification happens via Discord
         }
     }
 }

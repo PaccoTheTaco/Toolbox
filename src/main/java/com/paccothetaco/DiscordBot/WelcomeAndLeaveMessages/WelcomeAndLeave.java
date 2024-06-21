@@ -96,7 +96,6 @@ public class WelcomeAndLeave extends ListenerAdapter implements DataManager.Data
 
     @Override
     public void onDataChanged(String guildId) {
-        // Hier kannst du zusätzliche Logik hinzufügen, falls nötig
         System.out.println("Data changed for guild: " + guildId);
     }
 }

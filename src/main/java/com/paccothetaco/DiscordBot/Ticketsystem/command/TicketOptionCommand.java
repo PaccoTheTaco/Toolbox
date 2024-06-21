@@ -27,7 +27,6 @@ public class TicketOptionCommand extends ListenerAdapter {
 
         event.reply("Option " + option + " has been " + (activate ? "activated" : "deactivated") + ".").setEphemeral(true).queue();
 
-        // Aktualisieren oder neu erstellen des Embeds
         ticketEmbedCommand.sendNewTicketEmbed(event, true);
     }
 }
