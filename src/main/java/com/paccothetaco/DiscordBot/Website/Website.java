@@ -2,6 +2,7 @@ package com.paccothetaco.DiscordBot.Website;
 
 import com.paccothetaco.DiscordBot.DataManager;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.JDA;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -20,6 +21,7 @@ public class Website {
     private static Map<String, String> sessionKeys = new HashMap<>();
     private static Map<String, String> verifiedSessionKeys = new HashMap<>();
     private static JDA jda;
+    private static DataManager dataManager = new DataManager(); // Initialisiere DataManager
 
     public static void startServer(JDA jdaInstance) throws Exception {
         jda = jdaInstance; // Store the JDA instance
@@ -71,6 +73,8 @@ public class Website {
 
                     if (guild != null) {
                         String serverName = guild.getName();
+                        String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
+
                         resp.setContentType("text/html");
                         resp.setStatus(HttpServletResponse.SC_OK);
                         resp.getWriter().println("<!DOCTYPE html>");
@@ -96,24 +100,21 @@ public class Website {
                         resp.getWriter().println("    </div>");
                         resp.getWriter().println("    <div class=\"content settings-content\">");
                         resp.getWriter().println("        <h1>Settings for " + serverName + "</h1>");
-                        resp.getWriter().println("        <p>Here you can configure your Discord server settings:</p>");
-                        // Hier können die eigentlichen Einstellungen angezeigt werden
+                        resp.getWriter().println("        <p>Here you can configure your Discord server settings.</p>");
                         resp.getWriter().println("        <form method=\"POST\" action=\"/settings\">");
                         resp.getWriter().println("            <label for=\"welcomeChannel\">Select Welcome Channel:</label>");
                         resp.getWriter().println("            <select name=\"welcomeChannel\" id=\"welcomeChannel\">");
                         resp.getWriter().println("                <option value=\"none\">--deactivate--</option>");
 
-                        // Liste der Kanäle aus dem Server hinzufügen
-                        guild.getTextChannels().forEach(channel -> {
-                            try {
-                                resp.getWriter().println("                <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
-                            } catch (IOException e) {
-                                throw new RuntimeException(e);
-                            }
-                        });
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            String selected = channel.getId().equals(currentWelcomeChannelId) ? "selected" : "";
+                            try {resp.getWriter().println("<option value=\"" + channel.getId() + "\" " + selected + ">" + channel.getName() + "</option>");}
+                            catch (IOException e) {throw new RuntimeException(e);}
+                        }
 
                         resp.getWriter().println("            </select>");
                         resp.getWriter().println("            <input type=\"hidden\" name=\"guildId\" value=\"" + guildId + "\"/>");
+                        resp.getWriter().println("            <input type=\"hidden\" name=\"sessionKey\" value=\"" + sessionKey + "\"/>"); // Hier den sessionKey hinzufügen
                         resp.getWriter().println("            <button type=\"submit\">Save</button>");
                         resp.getWriter().println("        </form>");
                         resp.getWriter().println("    </div>");
@@ -200,24 +201,20 @@ public class Website {
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String guildId = req.getParameter("guildId");
             String welcomeChannelId = req.getParameter("welcomeChannel");
+            String sessionKey = req.getParameter("sessionKey");
 
             if ("none".equals(welcomeChannelId)) {
                 // Deactivate welcome messages
-                DataManager dataManager = new DataManager();
                 dataManager.setWelcomeActive(guildId, false);
             } else {
                 // Set welcome channel
-                DataManager dataManager = new DataManager();
                 dataManager.setWelcomeChannel(guildId, welcomeChannelId);
                 dataManager.setWelcomeActive(guildId, true);
             }
-
-            resp.sendRedirect("/settings?sk=" + req.getParameter("sk"));
+            dataManager.notifyListeners(guildId);  // Benachrichtige Listener nach einer Änderung
+            resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
-
-
-
 
     public static class VerifyServlet extends HttpServlet {
         @Override

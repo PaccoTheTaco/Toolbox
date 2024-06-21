@@ -41,19 +41,21 @@ public class Main {
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES)
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS)
                     .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
-                    .addEventListeners(commandUtil, new WelcomeAndLeave(dataManager),
-                            new ButtonInteractListener(dataManager), new SelectMenuInteractListener(dataManager),
-                            new LogListener(dataManager)) // LogListener hinzufügen
+                    .addEventListeners(
+                            commandUtil,
+                            new WelcomeAndLeave(dataManager),
+                            new ButtonInteractListener(dataManager),
+                            new SelectMenuInteractListener(dataManager),
+                            new LogListener(dataManager)
+                    )
                     .build()
                     .awaitReady();
 
             CommandListUpdateAction commands = jda.updateCommands();
             commands.addCommands(
-                    Commands.slash("setwelcomechannel", "Set the welcome channel")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as welcome channel", true)),
                     Commands.slash("setleavechannel", "Set the leave channel")
                             .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as leave channel", true)),
                     Commands.slash("deactivatewelcome", "Deactivate welcome messages for this server"),

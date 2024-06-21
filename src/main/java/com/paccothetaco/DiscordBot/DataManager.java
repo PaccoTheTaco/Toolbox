@@ -5,12 +5,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataManager {
     private final String dataFilePath = "src/main/java/com/paccothetaco/DiscordBot/serverData.json";
     private Map<String, ServerData> serverDataMap = new HashMap<>();
+    private List<DataChangeListener> listeners = new ArrayList<>();
 
     public DataManager() {
         createDataFile();
@@ -32,24 +35,44 @@ public class DataManager {
         }
     }
 
+    public void addListener(DataChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(DataChangeListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void notifyListeners(String guildId) {
+        for (DataChangeListener listener : listeners) {
+            listener.onDataChanged(guildId);
+        }
+    }
+
     public void setWelcomeChannel(String guildId, String channelId) {
+        System.out.println("Setting welcome channel to " + channelId);
         getServerData(guildId).setWelcomeChannelId(channelId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public void setLeaveChannel(String guildId, String channelId) {
         getServerData(guildId).setLeaveChannelId(channelId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public void setWelcomeActive(String guildId, boolean isActive) {
+        System.out.println("Setting welcome active to " + isActive);
         getServerData(guildId).setWelcomeActive(isActive);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public void setLeaveActive(String guildId, boolean isActive) {
         getServerData(guildId).setLeaveActive(isActive);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public String getWelcomeChannelId(String guildId) {
@@ -71,6 +94,7 @@ public class DataManager {
     public void setTicketCategory(String guildId, String categoryId) {
         getServerData(guildId).setTicketCategoryId(categoryId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public String getTicketCategory(String guildId) {
@@ -80,6 +104,7 @@ public class DataManager {
     public void setClosedTicketCategory(String guildId, String categoryId) {
         getServerData(guildId).setClosedTicketCategoryId(categoryId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public String getClosedTicketCategory(String guildId) {
@@ -89,6 +114,7 @@ public class DataManager {
     public void setModRole(String guildId, String roleId) {
         getServerData(guildId).setModRoleId(roleId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public String getModRole(String guildId) {
@@ -98,25 +124,17 @@ public class DataManager {
     public void setMessageLogChannel(String guildId, String channelId) {
         getServerData(guildId).setMessageLogChannelId(channelId);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public void deactivateMessageLog(String guildId) {
         getServerData(guildId).setMessageLogChannelId(null);
         saveChannelData();
+        notifyListeners(guildId);
     }
 
     public String getMessageLogChannel(String guildId) {
         return getServerData(guildId).getMessageLogChannelId();
-    }
-
-    public void setVoiceLogChannel(String guildId, String channelId) {
-        getServerData(guildId).setVoiceLogChannelId(channelId);
-        saveChannelData();
-    }
-
-    public void deactivateVoiceLog(String guildId) {
-        getServerData(guildId).setVoiceLogChannelId(null);
-        saveChannelData();
     }
 
     public String getVoiceLogChannel(String guildId) {
@@ -241,6 +259,7 @@ public class DataManager {
         public void setVoiceLogChannelId(String voiceLogChannelId) {
             this.voiceLogChannelId = voiceLogChannelId;
         }
+
         public void setTicketOption(String option, boolean active) {
             ticketOptions.put(option, active);
         }
@@ -248,6 +267,9 @@ public class DataManager {
         public Map<String, Boolean> getTicketOptions() {
             return ticketOptions;
         }
+    }
 
+    public interface DataChangeListener {
+        void onDataChanged(String guildId);
     }
 }

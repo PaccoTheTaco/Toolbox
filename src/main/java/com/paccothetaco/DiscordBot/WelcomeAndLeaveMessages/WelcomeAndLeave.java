@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import java.awt.*;
 import java.util.Random;
 
-public class WelcomeAndLeave extends ListenerAdapter {
+public class WelcomeAndLeave extends ListenerAdapter implements DataManager.DataChangeListener {
     private DataManager channelDataManager;
     private String[] welcomeMessages = {
             "Hey %s, great to have you here!",
@@ -26,11 +26,14 @@ public class WelcomeAndLeave extends ListenerAdapter {
 
     public WelcomeAndLeave(DataManager channelDataManager) {
         this.channelDataManager = channelDataManager;
+        this.channelDataManager.addListener(this);
     }
 
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        if (!channelDataManager.isWelcomeActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isWelcomeActive(event.getGuild().getId())) {
+            return;
+        }
 
         String welcomeChannelId = channelDataManager.getWelcomeChannelId(event.getGuild().getId());
         if (welcomeChannelId != null) {
@@ -46,19 +49,30 @@ public class WelcomeAndLeave extends ListenerAdapter {
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("Welcome to the community!", event.getGuild().getIconUrl());
 
-                welcomeChannel.sendMessageEmbeds(embed.build()).queue();
+                welcomeChannel.sendMessageEmbeds(embed.build()).queue(
+                        success -> System.out.println("Welcome message sent successfully."),
+                        error -> System.err.println("Failed to send welcome message: " + error)
+                );
+            } else {
+                System.out.println("Welcome channel not found.");
             }
+        } else {
+            System.out.println("No welcome channel ID set.");
         }
     }
 
     @Override
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
-        if (!channelDataManager.isLeaveActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isLeaveActive(event.getGuild().getId())) {
+            return;
+        }
 
         String leaveChannelId = channelDataManager.getLeaveChannelId(event.getGuild().getId());
+        System.out.println("Leave channel ID: " + leaveChannelId);
         if (leaveChannelId != null) {
             TextChannel leaveChannel = event.getGuild().getTextChannelById(leaveChannelId);
             if (leaveChannel != null) {
+                System.out.println("Leave channel found: " + leaveChannel.getName());
                 int memberCount = event.getGuild().getMemberCount();
                 String leaveMessage = String.format("Goodbye, %s. We hope to see you again!\nNow we are down to %d members.", event.getUser().getAsTag(), memberCount);
 
@@ -68,8 +82,21 @@ public class WelcomeAndLeave extends ListenerAdapter {
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("We hope to see you back!", event.getGuild().getIconUrl());
 
-                leaveChannel.sendMessageEmbeds(embed.build()).queue();
+                leaveChannel.sendMessageEmbeds(embed.build()).queue(
+                        success -> System.out.println("Leave message sent successfully."),
+                        error -> System.err.println("Failed to send leave message: " + error)
+                );
+            } else {
+                System.out.println("Leave channel not found.");
             }
+        } else {
+            System.out.println("No leave channel ID set.");
         }
+    }
+
+    @Override
+    public void onDataChanged(String guildId) {
+        // Hier kannst du zusätzliche Logik hinzufügen, falls nötig
+        System.out.println("Data changed for guild: " + guildId);
     }
 }
