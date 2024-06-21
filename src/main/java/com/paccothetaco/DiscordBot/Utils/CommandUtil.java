@@ -25,19 +25,6 @@ public class CommandUtil extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String guildId = event.getGuild().getId();
         switch (event.getName()) {
-            case "setleavechannel" -> {
-                String channelId = event.getOption("channel").getAsString();
-                dataManager.setLeaveChannel(guildId, channelId);
-                event.reply("Leave channel set to <#" + channelId + ">").queue();
-            }
-            case "deactivatewelcome" -> {
-                dataManager.setWelcomeActive(guildId, false);
-                event.reply("Welcome messages deactivated for this server.").queue();
-            }
-            case "deactivateleave" -> {
-                dataManager.setLeaveActive(guildId, false);
-                event.reply("Leave messages deactivated for this server.").queue();
-            }
             case "ticketembed" -> ticketEmbedCommand.execute(event);
             case "ticketcategory" -> {
                 String categoryId = event.getOption("category").getAsString();

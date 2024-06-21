@@ -1,6 +1,7 @@
 package com.paccothetaco.DiscordBot.Website;
 
 import com.paccothetaco.DiscordBot.DataManager;
+import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketEmbedCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.JDA;
@@ -73,8 +74,10 @@ public class Website {
                         String serverName = guild.getName();
                         String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
                         String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
+                        String currentTicketChannelId = dataManager.getTicketChannel(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
+                        String currentTicketChannelName = "--deactivated--";
 
                         if (currentWelcomeChannelId != null) {
                             TextChannel welcomeChannel = guild.getTextChannelById(currentWelcomeChannelId);
@@ -89,6 +92,15 @@ public class Website {
                                 currentLeaveChannelName = leaveChannel.getName();
                             }
                         }
+
+                        if (currentTicketChannelId != null) {
+                            TextChannel ticketChannel = guild.getTextChannelById(currentTicketChannelId);
+                            if (ticketChannel != null) {
+                                currentTicketChannelName = ticketChannel.getName();
+                            }
+                        }
+
+                        Map<String, Boolean> ticketOptions = dataManager.getTicketOptions(guildId);
 
                         resp.setContentType("text/html");
                         resp.setStatus(HttpServletResponse.SC_OK);
@@ -105,6 +117,8 @@ public class Website {
                         resp.getWriter().println("        .channel-selection { display: flex; align-items: center; }");
                         resp.getWriter().println("        .channel-selection span { margin-right: 10px; }");
                         resp.getWriter().println("        .dropdown-button { margin-left: 10px; }");
+                        resp.getWriter().println("        .ticket-options { margin-top: 20px; }");
+                        resp.getWriter().println("        .ticket-option { display: flex; align-items: center; margin-bottom: 10px; }");
                         resp.getWriter().println("    </style>");
                         resp.getWriter().println("</head>");
                         resp.getWriter().println("<body>");
@@ -156,6 +170,37 @@ public class Website {
                             resp.getWriter().println("                        <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
                         }
                         resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
+                        // Ticket Channel Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Ticket Channel:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"ticketChannelText\">");
+                        resp.getWriter().println("                    <span>" + currentTicketChannelName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('ticketChannel')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"ticketChannelMenu\">");
+                        resp.getWriter().println("                    <select name=\"ticketChannel\" id=\"ticketChannel\">");
+                        resp.getWriter().println("                        <option value=\"none\">--deactivate--</option>");
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            resp.getWriter().println("                        <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
+                        }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
+                        // Ticket Options
+                        resp.getWriter().println("            <div class=\"ticket-options\">");
+                        resp.getWriter().println("                <label>Ticket Options:</label>");
+                        resp.getWriter().println("                <div class=\"ticket-option\">");
+                        resp.getWriter().println("                    <input type=\"checkbox\" name=\"ticketOptionSupport\" " + (ticketOptions.getOrDefault("support", true) ? "checked" : "") + "> Support");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"ticket-option\">");
+                        resp.getWriter().println("                    <input type=\"checkbox\" name=\"ticketOptionReport\" " + (ticketOptions.getOrDefault("report", true) ? "checked" : "") + "> Report");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"ticket-option\">");
+                        resp.getWriter().println("                    <input type=\"checkbox\" name=\"ticketOptionApplication\" " + (ticketOptions.getOrDefault("application", true) ? "checked" : "") + "> Application");
                         resp.getWriter().println("                </div>");
                         resp.getWriter().println("            </div>");
 
@@ -257,6 +302,7 @@ public class Website {
             String guildId = req.getParameter("guildId");
             String welcomeChannelId = req.getParameter("welcomeChannel");
             String leaveChannelId = req.getParameter("leaveChannel");
+            String ticketChannelId = req.getParameter("ticketChannel");
             String sessionKey = req.getParameter("sessionKey");
 
             if ("none".equals(welcomeChannelId)) {
@@ -275,12 +321,37 @@ public class Website {
                 dataManager.setLeaveActive(guildId, true);
             }
 
+            // Ticket Channel Handling
+            if (ticketChannelId != null && !"none".equals(ticketChannelId)) {
+                dataManager.setTicketChannel(guildId, ticketChannelId);
+            }
+
+            // Update Ticket Options
+            boolean supportOption = req.getParameter("ticketOptionSupport") != null;
+            boolean reportOption = req.getParameter("ticketOptionReport") != null;
+            boolean applicationOption = req.getParameter("ticketOptionApplication") != null;
+
+            dataManager.setTicketOption(guildId, "support", supportOption);
+            dataManager.setTicketOption(guildId, "report", reportOption);
+            dataManager.setTicketOption(guildId, "application", applicationOption);
+
+            // Ticket Embed aktualisieren
+            Guild guild = jda.getGuildById(guildId);
+            if (guild != null) {
+                String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+                if (currentTicketChannelId != null) {
+                    TextChannel channel = guild.getTextChannelById(currentTicketChannelId);
+                    if (channel != null) {
+                        TicketEmbedCommand ticketEmbedCommand = new TicketEmbedCommand(dataManager);
+                        ticketEmbedCommand.sendNewTicketEmbed(channel, guildId, true);
+                    }
+                }
+            }
+
             dataManager.notifyListeners(guildId);
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
-
-
 
 
     public static class VerifyServlet extends HttpServlet {
