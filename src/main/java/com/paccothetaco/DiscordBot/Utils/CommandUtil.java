@@ -6,6 +6,7 @@ import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketOptionCommand;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import org.jetbrains.annotations.NotNull;
 
 import java.security.SecureRandom;
@@ -25,31 +26,6 @@ public class CommandUtil extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String guildId = event.getGuild().getId();
         switch (event.getName()) {
-            case "ticketcategory" -> {
-                String categoryId = event.getOption("category").getAsString();
-                dataManager.setTicketCategory(guildId, categoryId);
-                event.reply("Ticket category set to <#" + categoryId + ">").queue();
-            }
-            case "closedticketcategory" -> {
-                String categoryId = event.getOption("category").getAsString();
-                dataManager.setClosedTicketCategory(guildId, categoryId);
-                event.reply("Closed ticket category set to <#" + categoryId + ">").queue();
-            }
-            case "setmodrole" -> {
-                String roleId = event.getOption("modrole").getAsString();
-                dataManager.setModRole(guildId, roleId);
-                event.reply("Moderator role set to <@&" + roleId + ">").queue();
-            }
-            case "messagelogchannel" -> {
-                String channelId = event.getOption("channel").getAsString();
-                dataManager.setMessageLogChannel(guildId, channelId);
-                event.reply("Message log channel set to <#" + channelId + ">").queue();
-            }
-            case "deactivatemessagelog" -> {
-                dataManager.deactivateMessageLog(guildId);
-                event.reply("Message logging deactivated for this server.").queue();
-            }
-            case "ticketoption" -> ticketOptionCommand.onSlashCommandInteraction(event);
             case "settings" -> {
                 if (event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
                     String sessionKey = generateSessionKey(guildId);
@@ -63,8 +39,17 @@ public class CommandUtil extends ListenerAdapter {
             case "verify" -> {
                 if (event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
                     String sessionKey = event.getOption("sessionkey").getAsString();
-                    Website.addVerifiedSessionKey(sessionKey, guildId);
-                    event.reply("You have been verified. Please refresh the settings page.").setEphemeral(true).queue();
+                    String sessionGuildId = Website.getGuildId(sessionKey);
+                    if (guildId.equals(sessionGuildId)) {
+                        Website.addVerifiedSessionKey(sessionKey, guildId);
+                        // Verwenden Sie eine Schaltfläche für die Weiterleitung zu den Einstellungen
+                        event.reply("You have been verified. Redirecting to settings...")
+                                .setEphemeral(true)
+                                .addActionRow(Button.link("https://paccothetaco.com/settings?sk=" + sessionKey, "Go to Settings"))
+                                .queue();
+                    } else {
+                        event.reply("Invalid session key for this server.").setEphemeral(true).queue();
+                    }
                 } else {
                     event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
                 }

@@ -23,7 +23,7 @@
         .right-side img {
             display: block;
             margin: 0 auto 20px;
-            max-width: 50%;
+            max-width: 25%;
             height: auto;
         }
         @media (max-width: 768px) {
@@ -126,20 +126,6 @@
             </div>
             <div class="right-side">
                 <img src="Ticket.png" alt="Ticket Image">
-                <!-- Closed Ticket Category Selection -->
-                <div class="dropdown-container">
-                    <label>Select Closed Ticket Category:</label>
-                    <div class="channel-selection" id="closedTicketCategoryText">
-                        <span><!-- CLOSED_TICKET_CATEGORY_NAME --></span>
-                        <button type="button" class="dropdown-button" onclick="toggleDropdown('closedTicketCategory')">Change</button>
-                    </div>
-                    <div class="dropdown-menu" id="closedTicketCategoryMenu">
-                        <select name="closedTicketCategory" id="closedTicketCategory">
-                            <option value="none">--not set--</option>
-                            <!-- Populate categories dynamically -->
-                        </select>
-                    </div>
-                </div>
                 <!-- Ticket Category Selection -->
                 <div class="dropdown-container">
                     <label>Select Ticket Category:</label>
@@ -149,6 +135,20 @@
                     </div>
                     <div class="dropdown-menu" id="ticketCategoryMenu">
                         <select name="ticketCategory" id="ticketCategory">
+                            <option value="none">--not set--</option>
+                            <!-- Populate categories dynamically -->
+                        </select>
+                    </div>
+                </div>
+                <!-- Closed Ticket Category Selection -->
+                <div class="dropdown-container">
+                    <label>Select Closed Ticket Category:</label>
+                    <div class="channel-selection" id="closedTicketCategoryText">
+                        <span><!-- CLOSED_TICKET_CATEGORY_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('closedTicketCategory')">Change</button>
+                    </div>
+                    <div class="dropdown-menu" id="closedTicketCategoryMenu">
+                        <select name="closedTicketCategory" id="closedTicketCategory">
                             <option value="none">--not set--</option>
                             <!-- Populate categories dynamically -->
                         </select>
