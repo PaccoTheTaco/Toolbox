@@ -38,7 +38,7 @@ public class Main {
 
     public static void startBot() {
         DataManager dataManager = new DataManager();
-        CommandUtil commandUtil = new CommandUtil(dataManager);
+        CommandUtil commandUtil = new CommandUtil();
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
@@ -67,7 +67,12 @@ public class Main {
             commands.addCommands(
                     Commands.slash("settings", "Open settings page"),
                     Commands.slash("verify", "Verify admin status")
-                            .addOptions(new OptionData(OptionType.STRING, "sessionkey", "The session key to verify", true))
+                            .addOptions(new OptionData(OptionType.STRING, "sessionkey", "The session key to verify", true)),
+                    Commands.slash("tictactoe", "Start a new Tic-Tac-Toe game"),
+                    Commands.slash("move", "Make a move in Tic-Tac-Toe")
+                            .addOptions(
+                                    new OptionData(OptionType.INTEGER, "row", "The row to place your mark", true),
+                                    new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true))
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)
