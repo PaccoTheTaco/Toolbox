@@ -163,11 +163,73 @@ public class Website {
                         resp.getWriter().println("<p>Could not retrieve server details.</p>");
                     }
                 } else {
-                    String htmlTemplate = readFileAsString(System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments/verify.html");
-                    htmlTemplate = htmlTemplate.replace("<!-- SESSION_KEY -->", sessionKey);
-
+                    // HTML directly included instead of reading from file
                     resp.setContentType("text/html");
-                    resp.getWriter().write(htmlTemplate);
+                    resp.setStatus(HttpServletResponse.SC_OK);
+                    resp.getWriter().println("<!DOCTYPE html>");
+                    resp.getWriter().println("<html lang=\"en\">");
+                    resp.getWriter().println("<head>");
+                    resp.getWriter().println("    <meta charset=\"UTF-8\">");
+                    resp.getWriter().println("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+                    resp.getWriter().println("    <title>Verify - Admin Verification</title>");
+                    resp.getWriter().println("    <link rel=\"stylesheet\" href=\"style.css\">");
+                    resp.getWriter().println("    <style>");
+                    resp.getWriter().println("        html, body {");
+                    resp.getWriter().println("            margin: 0;");
+                    resp.getWriter().println("            padding: 0;");
+                    resp.getWriter().println("            height: 100%;");
+                    resp.getWriter().println("            width: 100%;");
+                    resp.getWriter().println("            display: flex;");
+                    resp.getWriter().println("            justify-content: center;");
+                    resp.getWriter().println("            align-items: center;");
+                    resp.getWriter().println("            background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);");
+                    resp.getWriter().println("            color: white;");
+                    resp.getWriter().println("            text-align: center;");
+                    resp.getWriter().println("            font-family: Arial, sans-serif;");
+                    resp.getWriter().println("        }");
+                    resp.getWriter().println("        .verify-content {");
+                    resp.getWriter().println("            display: flex;");
+                    resp.getWriter().println("            flex-direction: column;");
+                    resp.getWriter().println("            align-items: center;");
+                    resp.getWriter().println("            justify-content: center;");
+                    resp.getWriter().println("            padding: 20px;");
+                    resp.getWriter().println("            border-radius: 10px;");
+                    resp.getWriter().println("            background: rgba(0, 0, 0, 0.5);");
+                    resp.getWriter().println("        }");
+                    resp.getWriter().println("        .copy-button {");
+                    resp.getWriter().println("            margin-top: 20px;");
+                    resp.getWriter().println("            padding: 10px 20px;");
+                    resp.getWriter().println("            font-size: 1rem;");
+                    resp.getWriter().println("            color: white;");
+                    resp.getWriter().println("            background-color: #444;");
+                    resp.getWriter().println("            border: none;");
+                    resp.getWriter().println("            cursor: pointer;");
+                    resp.getWriter().println("            border-radius: 5px;");
+                    resp.getWriter().println("        }");
+                    resp.getWriter().println("        .copy-button:hover {");
+                    resp.getWriter().println("            background-color: #555;");
+                    resp.getWriter().println("        }");
+                    resp.getWriter().println("    </style>");
+                    resp.getWriter().println("</head>");
+                    resp.getWriter().println("<body>");
+                    resp.getWriter().println("    <div class=\"verify-content\">");
+                    resp.getWriter().println("        <h1>Verify that you are an Admin</h1>");
+                    resp.getWriter().println("        <p>Use <code id=\"verify-command\">/verify sessionkey:" + sessionKey + "</code> on the Discord Server</p>");
+                    resp.getWriter().println("        <button class=\"copy-button\" onclick=\"copyToClipboard()\">Copy Command</button>");
+                    resp.getWriter().println("        <p>Then refresh this page.</p>");
+                    resp.getWriter().println("    </div>");
+                    resp.getWriter().println("    <script>");
+                    resp.getWriter().println("        function copyToClipboard() {");
+                    resp.getWriter().println("            const command = document.getElementById('verify-command').textContent;");
+                    resp.getWriter().println("            navigator.clipboard.writeText(command).then(function() {");
+                    resp.getWriter().println("                alert('Command copied to clipboard');");
+                    resp.getWriter().println("            }, function(err) {");
+                    resp.getWriter().println("                console.error('Could not copy text: ', err);");
+                    resp.getWriter().println("            });");
+                    resp.getWriter().println("        }");
+                    resp.getWriter().println("    </script>");
+                    resp.getWriter().println("</body>");
+                    resp.getWriter().println("</html>");
                 }
             } else {
                 resp.setContentType("text/html");
@@ -311,16 +373,77 @@ public class Website {
         }
     }
 
-
     public static class VerifyServlet extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String sessionKey = req.getParameter("sk");
-            String htmlTemplate = readFileAsString(System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments/verify.html");
-            htmlTemplate = htmlTemplate.replace("${sessionKey}", sessionKey);
 
             resp.setContentType("text/html");
-            resp.getWriter().write(htmlTemplate);
+            resp.setStatus(HttpServletResponse.SC_OK);
+            resp.getWriter().println("<!DOCTYPE html>");
+            resp.getWriter().println("<html lang=\"en\">");
+            resp.getWriter().println("<head>");
+            resp.getWriter().println("    <meta charset=\"UTF-8\">");
+            resp.getWriter().println("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">");
+            resp.getWriter().println("    <title>Verify - Admin Verification</title>");
+            resp.getWriter().println("    <link rel=\"stylesheet\" href=\"style.css\">");
+            resp.getWriter().println("    <style>");
+            resp.getWriter().println("        html, body {");
+            resp.getWriter().println("            margin: 0;");
+            resp.getWriter().println("            padding: 0;");
+            resp.getWriter().println("            height: 100%;");
+            resp.getWriter().println("            width: 100%;");
+            resp.getWriter().println("            display: flex;");
+            resp.getWriter().println("            justify-content: center;");
+            resp.getWriter().println("            align-items: center;");
+            resp.getWriter().println("            background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);");
+            resp.getWriter().println("            color: white;");
+            resp.getWriter().println("            text-align: center;");
+            resp.getWriter().println("            font-family: Arial, sans-serif;");
+            resp.getWriter().println("        }");
+            resp.getWriter().println("        .verify-content {");
+            resp.getWriter().println("            display: flex;");
+            resp.getWriter().println("            flex-direction: column;");
+            resp.getWriter().println("            align-items: center;");
+            resp.getWriter().println("            justify-content: center;");
+            resp.getWriter().println("            padding: 20px;");
+            resp.getWriter().println("            border-radius: 10px;");
+            resp.getWriter().println("            background: rgba(0, 0, 0, 0.5);");
+            resp.getWriter().println("        }");
+            resp.getWriter().println("        .copy-button {");
+            resp.getWriter().println("            margin-top: 20px;");
+            resp.getWriter().println("            padding: 10px 20px;");
+            resp.getWriter().println("            font-size: 1rem;");
+            resp.getWriter().println("            color: white;");
+            resp.getWriter().println("            background-color: #444;");
+            resp.getWriter().println("            border: none;");
+            resp.getWriter().println("            cursor: pointer;");
+            resp.getWriter().println("            border-radius: 5px;");
+            resp.getWriter().println("        }");
+            resp.getWriter().println("        .copy-button:hover {");
+            resp.getWriter().println("            background-color: #555;");
+            resp.getWriter().println("        }");
+            resp.getWriter().println("    </style>");
+            resp.getWriter().println("</head>");
+            resp.getWriter().println("<body>");
+            resp.getWriter().println("    <div class=\"verify-content\">");
+            resp.getWriter().println("        <h1>Verify that you are an Admin</h1>");
+            resp.getWriter().println("        <p>Use <code id=\"verify-command\">/verify sessionkey:" + sessionKey + "</code> on the Discord Server</p>");
+            resp.getWriter().println("        <button class=\"copy-button\" onclick=\"copyToClipboard()\">Copy Command</button>");
+            resp.getWriter().println("        <p>Then refresh this page.</p>");
+            resp.getWriter().println("    </div>");
+            resp.getWriter().println("    <script>");
+            resp.getWriter().println("        function copyToClipboard() {");
+            resp.getWriter().println("            const command = document.getElementById('verify-command').textContent;");
+            resp.getWriter().println("            navigator.clipboard.writeText(command).then(function() {");
+            resp.getWriter().println("                alert('Command copied to clipboard');");
+            resp.getWriter().println("            }, function(err) {");
+            resp.getWriter().println("                console.error('Could not copy text: ', err);");
+            resp.getWriter().println("            });");
+            resp.getWriter().println("        }");
+            resp.getWriter().println("    </script>");
+            resp.getWriter().println("</body>");
+            resp.getWriter().println("</html>");
         }
     }
 }

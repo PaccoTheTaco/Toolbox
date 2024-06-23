@@ -4,9 +4,9 @@ body {
     display: flex;
     flex-direction: column;
     font-family: Arial, sans-serif;
-    font-size: 2rem;
+    font-size: 1rem;
     background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);
-    overflow: auto;
+    overflow: hidden;
     color: white;
     text-align: center;
 }
@@ -86,7 +86,7 @@ body {
 }
 
 h1 {
-    font-size: 3rem;
+    font-size: 2rem;
     margin: 20px 0;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
@@ -173,5 +173,20 @@ h1 {
 }
 
 .copy-button:hover {
+    background-color: #555;
+}
+
+.save-button {
+    font-size: 1.5rem;
+    padding: 10px 30px;
+    margin-top: 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #444;
+    color: white;
+}
+
+.save-button:hover {
     background-color: #555;
 }
