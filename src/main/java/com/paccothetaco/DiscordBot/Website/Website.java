@@ -77,11 +77,13 @@ public class Website {
                         String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
                         String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
                         String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+                        String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
                         String currentTicketCategoryId = dataManager.getTicketCategory(guildId);
                         String currentClosedTicketCategoryId = dataManager.getClosedTicketCategory(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
                         String currentTicketChannelName = "--deactivated--";
+                        String currentMessageLogChannelName = "--deactivated--";
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
 
@@ -103,6 +105,13 @@ public class Website {
                             TextChannel ticketChannel = guild.getTextChannelById(currentTicketChannelId);
                             if (ticketChannel != null) {
                                 currentTicketChannelName = ticketChannel.getName();
+                            }
+                        }
+
+                        if (currentMessageLogChannelId != null) {
+                            TextChannel messageLogChannel = guild.getTextChannelById(currentMessageLogChannelId);
+                            if (messageLogChannel != null) {
+                                currentMessageLogChannelName = messageLogChannel.getName();
                             }
                         }
 
@@ -210,6 +219,23 @@ public class Website {
                         resp.getWriter().println("                </div>");
                         resp.getWriter().println("            </div>");
 
+                        // Message Log Channel Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Message Log Channel:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"messageLogChannelText\">");
+                        resp.getWriter().println("                    <span>" + currentMessageLogChannelName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('messageLogChannel')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"messageLogChannelMenu\">");
+                        resp.getWriter().println("                    <select name=\"messageLogChannel\" id=\"messageLogChannel\">");
+                        resp.getWriter().println("                        <option value=\"none\">--deactivate--</option>");
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            resp.getWriter().println("                        <option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>");
+                        }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
                         // Ticket Category Selection
                         resp.getWriter().println("            <div class=\"dropdown-container\">");
                         resp.getWriter().println("                <label>Select Ticket Category:</label>");
@@ -259,24 +285,23 @@ public class Website {
                         resp.getWriter().println("            </div>");
 
                         // Modrole Selection
-                        resp.getWriter().println("<div class=\"dropdown-container\">");
-                        resp.getWriter().println("    <label>Select Moderator Role:</label>");
-                        resp.getWriter().println("    <div class=\"channel-selection\" id=\"modRoleText\">");
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Moderator Role:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"modRoleText\">");
                         String currentModRoleId = dataManager.getModRole(guildId);
                         String currentModRoleName = currentModRoleId != null ? guild.getRoleById(currentModRoleId).getName() : "--not selected--";
-                        resp.getWriter().println("        <span>" + currentModRoleName + "</span>");
-                        resp.getWriter().println("        <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('modRole')\">Change</button>");
-                        resp.getWriter().println("    </div>");
-                        resp.getWriter().println("    <div class=\"dropdown-menu\" id=\"modRoleMenu\">");
-                        resp.getWriter().println("        <select name=\"modRole\" id=\"modRole\">");
-                        resp.getWriter().println("            <option value=\"none\">--not selected--</option>");
+                        resp.getWriter().println("                    <span>" + currentModRoleName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('modRole')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"modRoleMenu\">");
+                        resp.getWriter().println("                    <select name=\"modRole\" id=\"modRole\">");
+                        resp.getWriter().println("                        <option value=\"none\">--not selected--</option>");
                         for (Role role : guild.getRoles()) {
-                            resp.getWriter().println("            <option value=\"" + role.getId() + "\">" + role.getName() + "</option>");
+                            resp.getWriter().println("                        <option value=\"" + role.getId() + "\">" + role.getName() + "</option>");
                         }
-                        resp.getWriter().println("        </select>");
-                        resp.getWriter().println("    </div>");
-                        resp.getWriter().println("</div>");
-
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
 
                         resp.getWriter().println("            <input type=\"hidden\" name=\"guildId\" value=\"" + guildId + "\"/>");
                         resp.getWriter().println("            <input type=\"hidden\" name=\"sessionKey\" value=\"" + sessionKey + "\"/>");
@@ -377,6 +402,7 @@ public class Website {
             String welcomeChannelId = req.getParameter("welcomeChannel");
             String leaveChannelId = req.getParameter("leaveChannel");
             String ticketChannelId = req.getParameter("ticketChannel");
+            String messageLogChannelId = req.getParameter("messageLogChannel");
             String ticketCategoryId = req.getParameter("ticketCategory");
             String closedTicketCategoryId = req.getParameter("closedTicketCategory");
             String modRoleId = req.getParameter("modRole");
@@ -432,30 +458,27 @@ public class Website {
                 ticketChanges = true;
             }
 
+            // Message Log Channel Handling
+            if ("none".equals(messageLogChannelId)) {
+                dataManager.deactivateMessageLog(guildId);
+                generalChanges = true;
+            } else {
+                if (!messageLogChannelId.equals(dataManager.getMessageLogChannel(guildId))) {
+                    dataManager.setMessageLogChannel(guildId, messageLogChannelId);
+                    generalChanges = true;
+                }
+            }
+
             // Ticket Category Handling
             if (ticketCategoryId != null && !"none".equals(ticketCategoryId)) {
                 dataManager.setTicketCategory(guildId, ticketCategoryId);
                 generalChanges = true;
-            } else if (ticketCategoryId == null || "none".equals(ticketCategoryId)) {
-                // Create Ticket Category if not set
-                Guild guild = jda.getGuildById(guildId);
-                if (guild != null) {
-                    Category newCategory = guild.createCategory("Tickets").complete();
-                    dataManager.setTicketCategory(guildId, newCategory.getId());
-                }
             }
 
             // Closed Ticket Category Handling
             if (closedTicketCategoryId != null && !"none".equals(closedTicketCategoryId)) {
                 dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
                 generalChanges = true;
-            } else if (closedTicketCategoryId == null || "none".equals(closedTicketCategoryId)) {
-                // Create Closed Ticket Category if not set
-                Guild guild = jda.getGuildById(guildId);
-                if (guild != null) {
-                    Category newCategory = guild.createCategory("Closed Tickets").complete();
-                    dataManager.setClosedTicketCategory(guildId, newCategory.getId());
-                }
             }
 
             // Mod Role Handling
@@ -506,6 +529,7 @@ public class Website {
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
+
 
     public static class VerifyServlet extends HttpServlet {
         @Override
