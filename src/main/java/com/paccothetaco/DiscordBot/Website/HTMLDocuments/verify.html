@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify - Admin Verification</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+        .verify-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .copy-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: white;
+            background-color: #444;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .copy-button:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="verify-content">
+    <h1>Verify that you are an Admin</h1>
+    <p>Use <code id="verify-command">/verify sessionkey:<span id="session-key">${sessionKey}</span></code> on the Discord Server</p>
+    <button class="copy-button" onclick="copyToClipboard()">Copy Command</button>
+    <p>Then refresh this page.</p>
+</div>
+<script>
+    function copyToClipboard() {
+        const sessionKey = document.getElementById('session-key').textContent;
+        const command = `/verify sessionkey:${sessionKey}`;
+        navigator.clipboard.writeText(command).then(function() {
+            alert('Command copied to clipboard');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    }
+</script>
+</body>
+</html>

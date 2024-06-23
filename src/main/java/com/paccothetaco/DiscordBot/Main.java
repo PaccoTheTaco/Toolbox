@@ -65,13 +65,6 @@ public class Main {
 
             CommandListUpdateAction commands = jda.updateCommands();
             commands.addCommands(
-                    Commands.slash("messagelogchannel", "Set the message log channel")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as message log channel", true)),
-                    Commands.slash("deactivatemessagelog", "Deactivate message logging for this server"),
-                    Commands.slash("ticketcategory", "Set the ticket category")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for tickets", true)),
-                    Commands.slash("closedticketcategory", "Set the closed ticket category")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for closed tickets", true)),
                     Commands.slash("settings", "Open settings page"),
                     Commands.slash("verify", "Verify admin status")
                             .addOptions(new OptionData(OptionType.STRING, "sessionkey", "The session key to verify", true))
