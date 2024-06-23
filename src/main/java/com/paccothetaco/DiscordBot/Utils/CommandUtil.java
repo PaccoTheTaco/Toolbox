@@ -25,7 +25,6 @@ public class CommandUtil extends ListenerAdapter {
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
         String guildId = event.getGuild().getId();
         switch (event.getName()) {
-            case "ticketembed" -> ticketEmbedCommand.execute(event);
             case "ticketcategory" -> {
                 String categoryId = event.getOption("category").getAsString();
                 dataManager.setTicketCategory(guildId, categoryId);

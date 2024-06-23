@@ -20,7 +20,7 @@ public class DataManager {
     public void checkAndAddServerIDs(JDA jda) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
 
             for (Guild guild : jda.getGuilds()) {
                 String serverID = guild.getId();
@@ -47,7 +47,7 @@ public class DataManager {
     public void addServerOnJoin(Guild guild) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
 
             String serverID = guild.getId();
 
@@ -187,6 +187,14 @@ public class DataManager {
         return getServerData(guildId).getTicketChannelId();
     }
 
+    public void setTicketsActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "tickets_active", isActive);
+    }
+
+    public boolean isTicketsActive(String guildId) {
+        return getServerData(guildId).isTicketsActive();
+    }
+
     // Methode zum Löschen des alten Ticketembeds
     public void deleteOldTicketEmbed(String guildId, TextChannel channel) {
         String messageId = getTicketEmbedMessageId(guildId);
@@ -237,7 +245,7 @@ public class DataManager {
             connection = DatabaseManager.getConnection();
             String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
-                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID " +
+                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active " +
                     "FROM server_data WHERE Server_ID = ?";
             stmt = connection.prepareStatement(query);
             stmt.setString(1, guildId);
@@ -257,6 +265,7 @@ public class DataManager {
                 serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
                 serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
                 serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
+                serverData.setTicketsActive(rs.getBoolean("tickets_active"));
             } else {
                 System.err.println("No data found for guild ID: " + guildId);
             }
@@ -289,15 +298,16 @@ public class DataManager {
         private boolean applicationTicketActive;
         private String ticketEmbedMessageId;
         private boolean reportTicketActive;
-        private String ticketChannelId; // Neue Variable für Ticket Channel
+        private String ticketChannelId;
+        private boolean ticketsActive;
 
-        // Getter und Setter für ticketChannelId
-        public String getTicketChannelId() {
-            return ticketChannelId;
+        // Getter und Setter für ticketsActive
+        public boolean isTicketsActive() {
+            return ticketsActive;
         }
 
-        public void setTicketChannelId(String ticketChannelId) {
-            this.ticketChannelId = ticketChannelId;
+        public void setTicketsActive(boolean ticketsActive) {
+            this.ticketsActive = ticketsActive;
         }
 
         // Bestehende Getter und Setter
@@ -403,6 +413,14 @@ public class DataManager {
 
         public void setReportTicketActive(boolean reportTicketActive) {
             this.reportTicketActive = reportTicketActive;
+        }
+
+        public String getTicketChannelId() {
+            return ticketChannelId;
+        }
+
+        public void setTicketChannelId(String ticketChannelId) {
+            this.ticketChannelId = ticketChannelId;
         }
     }
 

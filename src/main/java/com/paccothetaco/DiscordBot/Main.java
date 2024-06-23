@@ -65,31 +65,13 @@ public class Main {
 
             CommandListUpdateAction commands = jda.updateCommands();
             commands.addCommands(
-                    Commands.slash("setleavechannel", "Set the leave channel")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as leave channel", true)),
-                    Commands.slash("deactivatewelcome", "Deactivate welcome messages for this server"),
-                    Commands.slash("deactivateleave", "Deactivate leave messages for this server"),
                     Commands.slash("messagelogchannel", "Set the message log channel")
                             .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as message log channel", true)),
                     Commands.slash("deactivatemessagelog", "Deactivate message logging for this server"),
-                    Commands.slash("setvoicechannellog", "Set the voice channel log")
-                            .addOptions(new OptionData(OptionType.CHANNEL, "channel", "The channel to set as voice channel log", true)),
-                    Commands.slash("deactivatevoicechannellog", "Deactivate voice channel logging for this server"),
-                    Commands.slash("ticketembed", "Send the ticket embed"),
                     Commands.slash("ticketcategory", "Set the ticket category")
                             .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for tickets", true)),
                     Commands.slash("closedticketcategory", "Set the closed ticket category")
                             .addOptions(new OptionData(OptionType.CHANNEL, "category", "The category to set for closed tickets", true)),
-                    Commands.slash("setmodrole", "Set the moderator role")
-                            .addOptions(new OptionData(OptionType.ROLE, "modrole", "The role to set for moderators", true)),
-                    Commands.slash("ticketoption", "Activate or deactivate ticket options")
-                            .addOptions(new OptionData(OptionType.STRING, "action", "activate or deactivate", true)
-                                            .addChoice("activate", "activate")
-                                            .addChoice("deactivate", "deactivate"),
-                                    new OptionData(OptionType.STRING, "option", "The option to activate or deactivate", true)
-                                            .addChoice("support", "support")
-                                            .addChoice("report", "report")
-                                            .addChoice("application", "application")),
                     Commands.slash("settings", "Open settings page"),
                     Commands.slash("verify", "Verify admin status")
                             .addOptions(new OptionData(OptionType.STRING, "sessionkey", "The session key to verify", true))

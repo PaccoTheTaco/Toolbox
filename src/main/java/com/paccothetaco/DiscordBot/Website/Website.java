@@ -3,6 +3,8 @@ package com.paccothetaco.DiscordBot.Website;
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketEmbedCommand;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.JDA;
 import org.eclipse.jetty.server.Server;
@@ -75,9 +77,13 @@ public class Website {
                         String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
                         String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
                         String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+                        String currentTicketCategoryId = dataManager.getTicketCategory(guildId);
+                        String currentClosedTicketCategoryId = dataManager.getClosedTicketCategory(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
                         String currentTicketChannelName = "--deactivated--";
+                        String currentTicketCategoryName = "--not set--";
+                        String currentClosedTicketCategoryName = "--not set--";
 
                         if (currentWelcomeChannelId != null) {
                             TextChannel welcomeChannel = guild.getTextChannelById(currentWelcomeChannelId);
@@ -97,6 +103,20 @@ public class Website {
                             TextChannel ticketChannel = guild.getTextChannelById(currentTicketChannelId);
                             if (ticketChannel != null) {
                                 currentTicketChannelName = ticketChannel.getName();
+                            }
+                        }
+
+                        if (currentTicketCategoryId != null) {
+                            Category ticketCategory = guild.getCategoryById(currentTicketCategoryId);
+                            if (ticketCategory != null) {
+                                currentTicketCategoryName = ticketCategory.getName();
+                            }
+                        }
+
+                        if (currentClosedTicketCategoryId != null) {
+                            Category closedTicketCategory = guild.getCategoryById(currentClosedTicketCategoryId);
+                            if (closedTicketCategory != null) {
+                                currentClosedTicketCategoryName = closedTicketCategory.getName();
                             }
                         }
 
@@ -190,6 +210,40 @@ public class Website {
                         resp.getWriter().println("                </div>");
                         resp.getWriter().println("            </div>");
 
+                        // Ticket Category Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Ticket Category:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"ticketCategoryText\">");
+                        resp.getWriter().println("                    <span>" + currentTicketCategoryName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('ticketCategory')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"ticketCategoryMenu\">");
+                        resp.getWriter().println("                    <select name=\"ticketCategory\" id=\"ticketCategory\">");
+                        resp.getWriter().println("                        <option value=\"none\">--not set--</option>");
+                        for (Category category : guild.getCategories()) {
+                            resp.getWriter().println("                        <option value=\"" + category.getId() + "\">" + category.getName() + "</option>");
+                        }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
+                        // Closed Ticket Category Selection
+                        resp.getWriter().println("            <div class=\"dropdown-container\">");
+                        resp.getWriter().println("                <label>Select Closed Ticket Category:</label>");
+                        resp.getWriter().println("                <div class=\"channel-selection\" id=\"closedTicketCategoryText\">");
+                        resp.getWriter().println("                    <span>" + currentClosedTicketCategoryName + "</span>");
+                        resp.getWriter().println("                    <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('closedTicketCategory')\">Change</button>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("                <div class=\"dropdown-menu\" id=\"closedTicketCategoryMenu\">");
+                        resp.getWriter().println("                    <select name=\"closedTicketCategory\" id=\"closedTicketCategory\">");
+                        resp.getWriter().println("                        <option value=\"none\">--not set--</option>");
+                        for (Category category : guild.getCategories()) {
+                            resp.getWriter().println("                        <option value=\"" + category.getId() + "\">" + category.getName() + "</option>");
+                        }
+                        resp.getWriter().println("                    </select>");
+                        resp.getWriter().println("                </div>");
+                        resp.getWriter().println("            </div>");
+
                         // Ticket Options
                         resp.getWriter().println("            <div class=\"ticket-options\">");
                         resp.getWriter().println("                <label>Ticket Options:</label>");
@@ -203,6 +257,26 @@ public class Website {
                         resp.getWriter().println("                    <input type=\"checkbox\" name=\"ticketOptionApplication\" " + (ticketOptions.getOrDefault("application", true) ? "checked" : "") + "> Application");
                         resp.getWriter().println("                </div>");
                         resp.getWriter().println("            </div>");
+
+                        // Modrole Selection
+                        resp.getWriter().println("<div class=\"dropdown-container\">");
+                        resp.getWriter().println("    <label>Select Moderator Role:</label>");
+                        resp.getWriter().println("    <div class=\"channel-selection\" id=\"modRoleText\">");
+                        String currentModRoleId = dataManager.getModRole(guildId);
+                        String currentModRoleName = currentModRoleId != null ? guild.getRoleById(currentModRoleId).getName() : "--not selected--";
+                        resp.getWriter().println("        <span>" + currentModRoleName + "</span>");
+                        resp.getWriter().println("        <button type=\"button\" class=\"dropdown-button\" onclick=\"toggleDropdown('modRole')\">Change</button>");
+                        resp.getWriter().println("    </div>");
+                        resp.getWriter().println("    <div class=\"dropdown-menu\" id=\"modRoleMenu\">");
+                        resp.getWriter().println("        <select name=\"modRole\" id=\"modRole\">");
+                        resp.getWriter().println("            <option value=\"none\">--not selected--</option>");
+                        for (Role role : guild.getRoles()) {
+                            resp.getWriter().println("            <option value=\"" + role.getId() + "\">" + role.getName() + "</option>");
+                        }
+                        resp.getWriter().println("        </select>");
+                        resp.getWriter().println("    </div>");
+                        resp.getWriter().println("</div>");
+
 
                         resp.getWriter().println("            <input type=\"hidden\" name=\"guildId\" value=\"" + guildId + "\"/>");
                         resp.getWriter().println("            <input type=\"hidden\" name=\"sessionKey\" value=\"" + sessionKey + "\"/>");
@@ -303,56 +377,121 @@ public class Website {
             String welcomeChannelId = req.getParameter("welcomeChannel");
             String leaveChannelId = req.getParameter("leaveChannel");
             String ticketChannelId = req.getParameter("ticketChannel");
+            String ticketCategoryId = req.getParameter("ticketCategory");
+            String closedTicketCategoryId = req.getParameter("closedTicketCategory");
+            String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
 
+            boolean generalChanges = false;
+            boolean ticketChanges = false;
+
+            // Welcome Channel Handling
             if ("none".equals(welcomeChannelId)) {
-                dataManager.setWelcomeActive(guildId, false);
-                dataManager.setWelcomeChannel(guildId, null);
+                if (dataManager.isWelcomeActive(guildId)) {
+                    dataManager.setWelcomeActive(guildId, false);
+                    dataManager.setWelcomeChannel(guildId, null);
+                    generalChanges = true;
+                }
             } else {
-                dataManager.setWelcomeChannel(guildId, welcomeChannelId);
-                dataManager.setWelcomeActive(guildId, true);
+                if (!welcomeChannelId.equals(dataManager.getWelcomeChannelId(guildId))) {
+                    dataManager.setWelcomeChannel(guildId, welcomeChannelId);
+                    dataManager.setWelcomeActive(guildId, true);
+                    generalChanges = true;
+                }
             }
 
+            // Leave Channel Handling
             if ("none".equals(leaveChannelId)) {
-                dataManager.setLeaveActive(guildId, false);
-                dataManager.setLeaveChannel(guildId, null);
+                if (dataManager.isLeaveActive(guildId)) {
+                    dataManager.setLeaveActive(guildId, false);
+                    dataManager.setLeaveChannel(guildId, null);
+                    generalChanges = true;
+                }
             } else {
-                dataManager.setLeaveChannel(guildId, leaveChannelId);
-                dataManager.setLeaveActive(guildId, true);
+                if (!leaveChannelId.equals(dataManager.getLeaveChannelId(guildId))) {
+                    dataManager.setLeaveChannel(guildId, leaveChannelId);
+                    dataManager.setLeaveActive(guildId, true);
+                    generalChanges = true;
+                }
             }
 
             // Ticket Channel Handling
-            if (ticketChannelId != null && !"none".equals(ticketChannelId)) {
+            if (ticketChannelId != null && "none".equals(ticketChannelId)) {
+                String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+                if (currentTicketChannelId != null) {
+                    TextChannel channel = jda.getGuildById(guildId).getTextChannelById(currentTicketChannelId);
+                    if (channel != null) {
+                        dataManager.deleteOldTicketEmbed(guildId, channel);
+                    }
+                }
+                dataManager.setTicketChannel(guildId, null);
+                dataManager.setTicketsActive(guildId, false);
+            } else if (ticketChannelId != null) {
                 dataManager.setTicketChannel(guildId, ticketChannelId);
+                dataManager.setTicketsActive(guildId, true);
+                ticketChanges = true;
             }
 
-            // Update Ticket Options
+            // Ticket Category Handling
+            if (ticketCategoryId != null && !"none".equals(ticketCategoryId)) {
+                dataManager.setTicketCategory(guildId, ticketCategoryId);
+                generalChanges = true;
+            }
+
+            // Closed Ticket Category Handling
+            if (closedTicketCategoryId != null && !"none".equals(closedTicketCategoryId)) {
+                dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
+                generalChanges = true;
+            }
+
+            // Mod Role Handling
+            if ("none".equals(modRoleId)) {
+                if (dataManager.getModRole(guildId) != null) {
+                    dataManager.setModRole(guildId, null);
+                    generalChanges = true;
+                }
+            } else {
+                if (!modRoleId.equals(dataManager.getModRole(guildId))) {
+                    dataManager.setModRole(guildId, modRoleId);
+                    generalChanges = true;
+                }
+            }
+
+            // Ticket Options Handling
             boolean supportOption = req.getParameter("ticketOptionSupport") != null;
             boolean reportOption = req.getParameter("ticketOptionReport") != null;
             boolean applicationOption = req.getParameter("ticketOptionApplication") != null;
 
-            dataManager.setTicketOption(guildId, "support", supportOption);
-            dataManager.setTicketOption(guildId, "report", reportOption);
-            dataManager.setTicketOption(guildId, "application", applicationOption);
+            if (supportOption != dataManager.getTicketOptions(guildId).get("support") ||
+                    reportOption != dataManager.getTicketOptions(guildId).get("report") ||
+                    applicationOption != dataManager.getTicketOptions(guildId).get("application")) {
+                dataManager.setTicketOption(guildId, "support", supportOption);
+                dataManager.setTicketOption(guildId, "report", reportOption);
+                dataManager.setTicketOption(guildId, "application", applicationOption);
+                ticketChanges = true;
+            }
 
-            // Ticket Embed aktualisieren
-            Guild guild = jda.getGuildById(guildId);
-            if (guild != null) {
-                String currentTicketChannelId = dataManager.getTicketChannel(guildId);
-                if (currentTicketChannelId != null) {
-                    TextChannel channel = guild.getTextChannelById(currentTicketChannelId);
-                    if (channel != null) {
-                        TicketEmbedCommand ticketEmbedCommand = new TicketEmbedCommand(dataManager);
-                        ticketEmbedCommand.sendNewTicketEmbed(channel, guildId, true);
+            if (ticketChanges) {
+                Guild guild = jda.getGuildById(guildId);
+                if (guild != null) {
+                    String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+                    if (currentTicketChannelId != null) {
+                        TextChannel channel = guild.getTextChannelById(currentTicketChannelId);
+                        if (channel != null) {
+                            TicketEmbedCommand ticketEmbedCommand = new TicketEmbedCommand(dataManager);
+                            ticketEmbedCommand.sendNewTicketEmbed(channel, guildId, true);
+                        }
                     }
                 }
             }
 
-            dataManager.notifyListeners(guildId);
+            if (generalChanges || ticketChanges) {
+                dataManager.notifyListeners(guildId);
+            }
+
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
-
 
     public static class VerifyServlet extends HttpServlet {
         @Override
