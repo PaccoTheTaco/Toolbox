@@ -3,13 +3,10 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-end;
     font-family: Arial, sans-serif;
     font-size: 2rem;
     background: radial-gradient(circle, rgba(126, 87, 241, 0.7) 0%, rgba(69, 73, 204, 0.7) 100%);
-    overflow: hidden;
-    position: relative;
+    overflow: auto;
     color: white;
     text-align: center;
 }
@@ -84,6 +81,8 @@ body {
     padding: 20px;
     padding-top: 60px; /* Add some padding to move content down */
     width: 100%;
+    height: calc(100vh - 60px); /* Adjust height to fit within viewport */
+    overflow-y: auto; /* Ensure scrolling */
 }
 
 h1 {
@@ -144,6 +143,8 @@ h1 {
     padding: 20px;
     padding-top: 60px; /* Add some padding to move content down */
     width: 100%;
+    height: calc(100vh - 60px); /* Adjust height to fit within viewport */
+    overflow-y: auto; /* Ensure scrolling */
     color: white;
 }
 
@@ -157,6 +158,7 @@ h1 {
     padding: 20px;
     width: 100%;
     color: white;
+    overflow-y: auto; /* Ensure scrolling */
 }
 
 .copy-button {

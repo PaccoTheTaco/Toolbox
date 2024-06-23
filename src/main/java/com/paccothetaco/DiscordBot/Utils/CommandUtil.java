@@ -53,7 +53,7 @@ public class CommandUtil extends ListenerAdapter {
             case "settings" -> {
                 if (event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
                     String sessionKey = generateSessionKey(guildId);
-                    String settingsUrl = "http://localhost:8080/settings?sk=" + sessionKey;
+                    String settingsUrl = "https://paccothetaco.com/settings?sk=" + sessionKey;
                     Website.addSessionKey(sessionKey, guildId);
                     event.reply("Go to your settings: " + settingsUrl).setEphemeral(true).queue();
                 } else {

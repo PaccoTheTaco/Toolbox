@@ -436,12 +436,26 @@ public class Website {
             if (ticketCategoryId != null && !"none".equals(ticketCategoryId)) {
                 dataManager.setTicketCategory(guildId, ticketCategoryId);
                 generalChanges = true;
+            } else if (ticketCategoryId == null || "none".equals(ticketCategoryId)) {
+                // Create Ticket Category if not set
+                Guild guild = jda.getGuildById(guildId);
+                if (guild != null) {
+                    Category newCategory = guild.createCategory("Tickets").complete();
+                    dataManager.setTicketCategory(guildId, newCategory.getId());
+                }
             }
 
             // Closed Ticket Category Handling
             if (closedTicketCategoryId != null && !"none".equals(closedTicketCategoryId)) {
                 dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
                 generalChanges = true;
+            } else if (closedTicketCategoryId == null || "none".equals(closedTicketCategoryId)) {
+                // Create Closed Ticket Category if not set
+                Guild guild = jda.getGuildById(guildId);
+                if (guild != null) {
+                    Category newCategory = guild.createCategory("Closed Tickets").complete();
+                    dataManager.setClosedTicketCategory(guildId, newCategory.getId());
+                }
             }
 
             // Mod Role Handling
