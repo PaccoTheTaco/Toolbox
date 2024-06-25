@@ -9,6 +9,7 @@ import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -38,7 +39,7 @@ public class Main {
 
     public static void startBot() {
         DataManager dataManager = new DataManager();
-        CommandUtil commandUtil = new CommandUtil();
+        CommandUtil commandUtil = new CommandUtil(dataManager);
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
@@ -72,7 +73,8 @@ public class Main {
                     Commands.slash("move", "Make a move in Tic-Tac-Toe")
                             .addOptions(
                                     new OptionData(OptionType.INTEGER, "row", "The row to place your mark", true),
-                                    new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true))
+                                    new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true)),
+                    Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game")
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

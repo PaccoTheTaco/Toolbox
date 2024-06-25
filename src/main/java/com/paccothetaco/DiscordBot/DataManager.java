@@ -178,7 +178,6 @@ public class DataManager {
         return ticketOptions;
     }
 
-    // Neue Methoden für Ticket Channel
     public void setTicketChannel(String guildId, String channelId) {
         updateServerData(guildId, "ticket_channel_ID", channelId);
     }
@@ -195,22 +194,19 @@ public class DataManager {
         return getServerData(guildId).isTicketsActive();
     }
 
-    // Methode zum Löschen des alten Ticketembeds
     public void deleteOldTicketEmbed(String guildId, TextChannel channel) {
         String messageId = getTicketEmbedMessageId(guildId);
         if (messageId != null && !messageId.isEmpty()) {
             channel.deleteMessageById(messageId).queue(
                     success -> {
                         System.out.println("Old ticket embed deleted successfully.");
-                        // Setze die Message ID auf null, nachdem das Embed erfolgreich gelöscht wurde
                         setTicketEmbedMessageId(guildId, null);
                     },
                     failure -> {
                         System.err.println("Failed to delete old ticket embed: " + failure.getMessage());
-                        // Falls die Nachricht nicht gefunden wurde, setze die Message ID auf null, um Inkonsistenzen zu vermeiden
                         if (failure instanceof ErrorResponseException) {
                             ErrorResponseException ex = (ErrorResponseException) failure;
-                            if (ex.getErrorCode() == 10008) { // Unknown Message
+                            if (ex.getErrorCode() == 10008) {
                                 setTicketEmbedMessageId(guildId, null);
                             }
                         }
@@ -245,7 +241,7 @@ public class DataManager {
             connection = DatabaseManager.getConnection();
             String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
-                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active " +
+                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID " +
                     "FROM server_data WHERE Server_ID = ?";
             stmt = connection.prepareStatement(query);
             stmt.setString(1, guildId);
@@ -266,6 +262,8 @@ public class DataManager {
                 serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
                 serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
                 serverData.setTicketsActive(rs.getBoolean("tickets_active"));
+                serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
+                serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
             } else {
                 System.err.println("No data found for guild ID: " + guildId);
             }
@@ -284,6 +282,63 @@ public class DataManager {
         return serverData;
     }
 
+    public boolean isTicTacToeActive(String serverId) {
+        String query = "SELECT TicTacToe_is_active FROM server_data WHERE Server_ID = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, serverId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getBoolean("TicTacToe_is_active");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public void setTicTacToeActive(String serverId, boolean isActive) {
+        String query = "UPDATE server_data SET TicTacToe_is_active = ? WHERE Server_ID = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setBoolean(1, isActive);
+            stmt.setString(2, serverId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setTicTacToePlayers(String serverId, String player1Id, String player2Id) {
+        String query = "UPDATE server_data SET TicTacToe_Player1_ID = ?, TicTacToe_Player2_ID = ? WHERE Server_ID = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, player1Id);
+            stmt.setString(2, player2Id);
+            stmt.setString(3, serverId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String[] getTicTacToePlayers(String serverId) {
+        String query = "SELECT TicTacToe_Player1_ID, TicTacToe_Player2_ID FROM server_data WHERE Server_ID = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, serverId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new String[]{rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID")};
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return new String[]{null, null};
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -300,17 +355,27 @@ public class DataManager {
         private boolean reportTicketActive;
         private String ticketChannelId;
         private boolean ticketsActive;
+        private boolean ticTacToeActive;
+        private String player1Id;
+        private String player2Id;
 
-        // Getter und Setter für ticketsActive
-        public boolean isTicketsActive() {
-            return ticketsActive;
+        public boolean isTicTacToeActive() {
+            return ticTacToeActive;
         }
 
-        public void setTicketsActive(boolean ticketsActive) {
-            this.ticketsActive = ticketsActive;
+        public void setTicTacToeActive(boolean ticTacToeActive) {
+            this.ticTacToeActive = ticTacToeActive;
         }
 
-        // Bestehende Getter und Setter
+        public String[] getTicTacToePlayers() {
+            return new String[]{player1Id, player2Id};
+        }
+
+        public void setTicTacToePlayers(String player1Id, String player2Id) {
+            this.player1Id = player1Id;
+            this.player2Id = player2Id;
+        }
+
         public String getTicketEmbedMessageId() {
             return ticketEmbedMessageId;
         }
@@ -421,6 +486,14 @@ public class DataManager {
 
         public void setTicketChannelId(String ticketChannelId) {
             this.ticketChannelId = ticketChannelId;
+        }
+
+        public boolean isTicketsActive() {
+            return ticketsActive;
+        }
+
+        public void setTicketsActive(boolean ticketsActive) {
+            this.ticketsActive = ticketsActive;
         }
     }
 
