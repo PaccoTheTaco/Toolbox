@@ -1,6 +1,6 @@
-package com.paccothetaco.DiscordBot;
+package com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages;
 
-import com.paccothetaco.DiscordBot.Utils.WelcomeAndLeaveUtil;
+import com.paccothetaco.DiscordBot.DataManager;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -11,8 +11,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import java.awt.*;
 import java.util.Random;
 
-public class WelcomeAndLeave extends ListenerAdapter {
-    private WelcomeAndLeaveUtil welcomeAndLeaveUtil;
+public class WelcomeAndLeave extends ListenerAdapter implements DataManager.DataChangeListener {
+    private DataManager channelDataManager;
     private String[] welcomeMessages = {
             "Hey %s, great to have you here!",
             "Hello %s, we're glad you found your way here.",
@@ -24,15 +24,18 @@ public class WelcomeAndLeave extends ListenerAdapter {
             "Hey %s, we've been waiting for you!"
     };
 
-    public WelcomeAndLeave(WelcomeAndLeaveUtil welcomeAndLeaveUtil) {
-        this.welcomeAndLeaveUtil = welcomeAndLeaveUtil;
+    public WelcomeAndLeave(DataManager channelDataManager) {
+        this.channelDataManager = channelDataManager;
+        this.channelDataManager.addListener(this);
     }
 
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
-        if (!welcomeAndLeaveUtil.isWelcomeActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isWelcomeActive(event.getGuild().getId())) {
+            return;
+        }
 
-        String welcomeChannelId = welcomeAndLeaveUtil.getWelcomeChannelId(event.getGuild().getId());
+        String welcomeChannelId = channelDataManager.getWelcomeChannelId(event.getGuild().getId());
         if (welcomeChannelId != null) {
             TextChannel welcomeChannel = event.getGuild().getTextChannelById(welcomeChannelId);
             if (welcomeChannel != null) {
@@ -46,19 +49,30 @@ public class WelcomeAndLeave extends ListenerAdapter {
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("Welcome to the community!", event.getGuild().getIconUrl());
 
-                welcomeChannel.sendMessageEmbeds(embed.build()).queue();
+                welcomeChannel.sendMessageEmbeds(embed.build()).queue(
+                        success -> System.out.println("Welcome message sent successfully."),
+                        error -> System.err.println("Failed to send welcome message: " + error)
+                );
+            } else {
+                System.out.println("Welcome channel not found.");
             }
+        } else {
+            System.out.println("No welcome channel ID set.");
         }
     }
 
     @Override
     public void onGuildMemberRemove(@NotNull GuildMemberRemoveEvent event) {
-        if (!welcomeAndLeaveUtil.isLeaveActive(event.getGuild().getId())) return;
+        if (!channelDataManager.isLeaveActive(event.getGuild().getId())) {
+            return;
+        }
 
-        String leaveChannelId = welcomeAndLeaveUtil.getLeaveChannelId(event.getGuild().getId());
+        String leaveChannelId = channelDataManager.getLeaveChannelId(event.getGuild().getId());
+        System.out.println("Leave channel ID: " + leaveChannelId);
         if (leaveChannelId != null) {
             TextChannel leaveChannel = event.getGuild().getTextChannelById(leaveChannelId);
             if (leaveChannel != null) {
+                System.out.println("Leave channel found: " + leaveChannel.getName());
                 int memberCount = event.getGuild().getMemberCount();
                 String leaveMessage = String.format("Goodbye, %s. We hope to see you again!\nNow we are down to %d members.", event.getUser().getAsTag(), memberCount);
 
@@ -68,8 +82,20 @@ public class WelcomeAndLeave extends ListenerAdapter {
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("We hope to see you back!", event.getGuild().getIconUrl());
 
-                leaveChannel.sendMessageEmbeds(embed.build()).queue();
+                leaveChannel.sendMessageEmbeds(embed.build()).queue(
+                        success -> System.out.println("Leave message sent successfully."),
+                        error -> System.err.println("Failed to send leave message: " + error)
+                );
+            } else {
+                System.out.println("Leave channel not found.");
             }
+        } else {
+            System.out.println("No leave channel ID set.");
         }
+    }
+
+    @Override
+    public void onDataChanged(String guildId) {
+        System.out.println("Data changed for guild: " + guildId);
     }
 }
