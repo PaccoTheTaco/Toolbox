@@ -9,7 +9,6 @@ import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -74,7 +73,9 @@ public class Main {
                             .addOptions(
                                     new OptionData(OptionType.INTEGER, "row", "The row to place your mark", true),
                                     new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true)),
-                    Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game")
+                    Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game"),
+                    Commands.slash("toolboxgpt", "Ask ToolboxGPT a question")
+                            .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true))
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

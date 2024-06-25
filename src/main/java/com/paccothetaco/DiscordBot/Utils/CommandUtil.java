@@ -2,6 +2,7 @@ package com.paccothetaco.DiscordBot.Utils;
 
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Games.TicTacToe;
+import com.paccothetaco.DiscordBot.ToolboxGPT;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -10,6 +11,7 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,6 +34,8 @@ public class CommandUtil extends ListenerAdapter {
             case "tictactoe" -> handleTicTacToe(event);
             case "move" -> handleMove(event);
             case "stopgame" -> handleStopGame(event);
+            case "toolboxgpt" -> handleToolboxGPT(event);  // Neuer Fall hinzugefügt
+
         }
     }
 
@@ -39,6 +43,18 @@ public class CommandUtil extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getComponentId().equals("join_tictactoe")) {
             handleJoinTicTacToe(event);
+        }
+    }
+
+    private void handleToolboxGPT(SlashCommandInteractionEvent event) {
+        String question = event.getOption("question").getAsString();
+
+        try {
+            String response = ToolboxGPT.getGPTResponse(question);
+            event.reply(response).queue();
+        } catch (IOException e) {
+            event.reply("Sorry, there was an error processing your request.").setEphemeral(true).queue();
+            e.printStackTrace();
         }
     }
 
