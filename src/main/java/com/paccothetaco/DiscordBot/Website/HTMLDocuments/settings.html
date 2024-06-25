@@ -10,8 +10,8 @@
         .dropdown-container { margin-bottom: 20px; }
         .channel-selection { display: flex; flex-direction: column; align-items: center; }
         .dropdown-button { margin-top: 10px; }
-        .ticket-options { margin-top: 20px; }
-        .ticket-option { display: flex; align-items: center; margin-bottom: 10px; }
+        .ticket-options, .log-options { margin-top: 20px; }
+        .ticket-option, .log-option { display: flex; align-items: center; margin-bottom: 10px; }
         .settings-container {
             display: flex;
             justify-content: space-between;
@@ -19,12 +19,6 @@
         }
         .left-side, .right-side {
             width: 48%;
-        }
-        .right-side img {
-            display: block;
-            margin: 0 auto 20px;
-            max-width: 25%;
-            height: auto;
         }
         @media (max-width: 768px) {
             .left-side, .right-side {
@@ -64,6 +58,7 @@
                         <select name="welcomeChannel" id="welcomeChannel">
                             <option value="none">--deactivate--</option>
                             <!-- Populate channels dynamically -->
+                            <!-- CHANNEL_OPTIONS_WELCOME -->
                         </select>
                     </div>
                 </div>
@@ -78,34 +73,7 @@
                         <select name="leaveChannel" id="leaveChannel">
                             <option value="none">--deactivate--</option>
                             <!-- Populate channels dynamically -->
-                        </select>
-                    </div>
-                </div>
-                <!-- Ticket Channel Selection -->
-                <div class="dropdown-container">
-                    <label>Select Ticket Channel:</label>
-                    <div class="channel-selection" id="ticketChannelText">
-                        <span><!-- TICKET_CHANNEL_NAME --></span>
-                        <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketChannel')">Change</button>
-                    </div>
-                    <div class="dropdown-menu" id="ticketChannelMenu">
-                        <select name="ticketChannel" id="ticketChannel">
-                            <option value="none">--deactivate--</option>
-                            <!-- Populate channels dynamically -->
-                        </select>
-                    </div>
-                </div>
-                <!-- Message Log Channel Selection -->
-                <div class="dropdown-container">
-                    <label>Select Message Log Channel:</label>
-                    <div class="channel-selection" id="messageLogChannelText">
-                        <span><!-- MESSAGE_LOG_CHANNEL_NAME --></span>
-                        <button type="button" class="dropdown-button" onclick="toggleDropdown('messageLogChannel')">Change</button>
-                    </div>
-                    <div class="dropdown-menu" id="messageLogChannelMenu">
-                        <select name="messageLogChannel" id="messageLogChannel">
-                            <option value="none">--deactivate--</option>
-                            <!-- Populate channels dynamically -->
+                            <!-- CHANNEL_OPTIONS_LEAVE -->
                         </select>
                     </div>
                 </div>
@@ -120,12 +88,58 @@
                         <select name="modRole" id="modRole">
                             <option value="none">--not selected--</option>
                             <!-- Populate roles dynamically -->
+                            <!-- ROLE_OPTIONS -->
                         </select>
+                    </div>
+                </div>
+                <!-- Message Log Channel Selection -->
+                <div class="dropdown-container">
+                    <label>Select Message Log Channel:</label>
+                    <div class="channel-selection" id="messageLogChannelText">
+                        <span><!-- MESSAGE_LOG_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('messageLogChannel')">Change</button>
+                    </div>
+                    <div class="dropdown-menu" id="messageLogChannelMenu">
+                        <select name="messageLogChannel" id="messageLogChannel">
+                            <option value="none">--deactivate--</option>
+                            <!-- Populate channels dynamically -->
+                            <!-- CHANNEL_OPTIONS_MESSAGE_LOG -->
+                        </select>
+                    </div>
+                </div>
+                <!-- Log Options -->
+                <div class="log-options">
+                    <label>Log Options:</label>
+                    <div class="log-option">
+                        <input type="checkbox" name="joinLogActive" {JOIN_LOG_ACTIVE}> Join Log
+                    </div>
+                    <div class="log-option">
+                        <input type="checkbox" name="leaveLogActive" {LEAVE_LOG_ACTIVE}> Leave Log
+                    </div>
+                    <div class="log-option">
+                        <input type="checkbox" name="changeNameLogActive" {CHANGE_NAME_LOG_ACTIVE}> Name Change Log
+                    </div>
+                    <div class="log-option">
+                        <input type="checkbox" name="changeNicknameLogActive" {CHANGE_NICKNAME_LOG_ACTIVE}> Nickname Change Log
                     </div>
                 </div>
             </div>
             <div class="right-side">
-                <img src="Ticket.png" alt="Ticket Image">
+                <!-- Ticket Channel Selection -->
+                <div class="dropdown-container">
+                    <label>Select Ticket Channel:</label>
+                    <div class="channel-selection" id="ticketChannelText">
+                        <span><!-- TICKET_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketChannel')">Change</button>
+                    </div>
+                    <div class="dropdown-menu" id="ticketChannelMenu">
+                        <select name="ticketChannel" id="ticketChannel">
+                            <option value="none">--deactivate--</option>
+                            <!-- Populate channels dynamically -->
+                            <!-- CHANNEL_OPTIONS_TICKET -->
+                        </select>
+                    </div>
+                </div>
                 <!-- Ticket Category Selection -->
                 <div class="dropdown-container">
                     <label>Select Ticket Category:</label>
@@ -137,6 +151,7 @@
                         <select name="ticketCategory" id="ticketCategory">
                             <option value="none">--not set--</option>
                             <!-- Populate categories dynamically -->
+                            <!-- CATEGORY_OPTIONS_TICKET -->
                         </select>
                     </div>
                 </div>
@@ -151,6 +166,7 @@
                         <select name="closedTicketCategory" id="closedTicketCategory">
                             <option value="none">--not set--</option>
                             <!-- Populate categories dynamically -->
+                            <!-- CATEGORY_OPTIONS_CLOSED_TICKET -->
                         </select>
                     </div>
                 </div>

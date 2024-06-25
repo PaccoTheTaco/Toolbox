@@ -21,7 +21,7 @@ body {
     flex-direction: column;
     justify-content: space-around;
     cursor: pointer;
-    z-index: 3; /* Ensure the burger menu is above other elements */
+    z-index: 3;
 }
 
 .burger-menu div {
@@ -44,7 +44,7 @@ body {
     background-color: rgba(0, 0, 0, 0.8);
     transform: translateX(-250px);
     transition: transform 0.3s ease;
-    z-index: 2; /* Ensure the sidebar is above other elements but below the burger menu */
+    z-index: 2;
     display: flex;
     flex-direction: column;
     padding-top: 60px;
@@ -67,7 +67,7 @@ body {
 
 .sidebar a:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 10px; /* Adjust this value to control the roundness */
+    border-radius: 10px;
 }
 
 .content {
@@ -77,12 +77,12 @@ body {
     justify-content: flex-start;
     text-align: center;
     flex-grow: 1;
-    z-index: 1; /* Ensure the content is below the sidebar */
+    z-index: 1;
     padding: 20px;
-    padding-top: 60px; /* Add some padding to move content down */
+    padding-top: 60px;
     width: 100%;
-    height: calc(100vh - 60px); /* Adjust height to fit within viewport */
-    overflow-y: auto; /* Ensure scrolling */
+    height: calc(100vh - 60px);
+    overflow-y: auto;
 }
 
 h1 {
@@ -139,12 +139,12 @@ h1 {
     justify-content: flex-start;
     text-align: center;
     flex-grow: 1;
-    z-index: 1; /* Ensure the content is below the sidebar */
+    z-index: 1;
     padding: 20px;
-    padding-top: 60px; /* Add some padding to move content down */
+    padding-top: 60px;
     width: 100%;
-    height: calc(100vh - 60px); /* Adjust height to fit within viewport */
-    overflow-y: auto; /* Ensure scrolling */
+    height: calc(100vh - 60px);
+    overflow-y: auto;
     color: white;
 }
 
@@ -158,7 +158,7 @@ h1 {
     padding: 20px;
     width: 100%;
     color: white;
-    overflow-y: auto; /* Ensure scrolling */
+    overflow-y: auto;
 }
 
 .copy-button {

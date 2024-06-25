@@ -358,6 +358,19 @@ public class DataManager {
         private boolean ticTacToeActive;
         private String player1Id;
         private String player2Id;
+        private boolean joinLogActive;
+        private boolean leaveLogActive;
+        private boolean changeNameLogActive;
+        private boolean changeNicknameLogActive;
+
+        public boolean isJoinLogActive() { return joinLogActive; }
+        public void setJoinLogActive(boolean joinLogActive) { this.joinLogActive = joinLogActive; }
+        public boolean isLeaveLogActive() { return leaveLogActive; }
+        public void setLeaveLogActive(boolean leaveLogActive) { this.leaveLogActive = leaveLogActive; }
+        public boolean isChangeNameLogActive() { return changeNameLogActive; }
+        public void setChangeNameLogActive(boolean changeNameLogActive) { this.changeNameLogActive = changeNameLogActive; }
+        public boolean isChangeNicknameLogActive() { return changeNicknameLogActive; }
+        public void setChangeNicknameLogActive(boolean changeNicknameLogActive) { this.changeNicknameLogActive = changeNicknameLogActive; }
 
         public boolean isTicTacToeActive() {
             return ticTacToeActive;
@@ -495,6 +508,38 @@ public class DataManager {
         public void setTicketsActive(boolean ticketsActive) {
             this.ticketsActive = ticketsActive;
         }
+    }
+
+    public void setJoinLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "join_log_active", isActive);
+    }
+
+    public void setLeaveLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "leave_log_active", isActive);
+    }
+
+    public void setChangeNameLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "changeName_log_active", isActive);
+    }
+
+    public void setChangeNicknameLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "changeNickname_log_active", isActive);
+    }
+
+    public boolean isJoinLogActive(String guildId) {
+        return getServerData(guildId).isJoinLogActive();
+    }
+
+    public boolean isLeaveLogActive(String guildId) {
+        return getServerData(guildId).isLeaveLogActive();
+    }
+
+    public boolean isChangeNameLogActive(String guildId) {
+        return getServerData(guildId).isChangeNameLogActive();
+    }
+
+    public boolean isChangeNicknameLogActive(String guildId) {
+        return getServerData(guildId).isChangeNicknameLogActive();
     }
 
     public interface DataChangeListener {

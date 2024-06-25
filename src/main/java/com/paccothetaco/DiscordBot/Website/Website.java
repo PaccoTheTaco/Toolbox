@@ -94,6 +94,25 @@ public class Website {
                         String currentMessageLogChannelName = "--deactivated--";
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
+                        boolean joinLogActive = dataManager.isJoinLogActive(guildId);
+                        boolean leaveLogActive = dataManager.isLeaveLogActive(guildId);
+                        boolean changeNameLogActive = dataManager.isChangeNameLogActive(guildId);
+                        boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
+
+                        // Get channel and category options
+                        String channelOptions = "";
+                        String categoryOptions = "";
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            channelOptions += "<option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>";
+                        }
+                        for (Category category : guild.getCategories()) {
+                            categoryOptions += "<option value=\"" + category.getId() + "\">" + category.getName() + "</option>";
+                        }
+                        // Get role options
+                        String roleOptions = "";
+                        for (Role role : guild.getRoles()) {
+                            roleOptions += "<option value=\"" + role.getId() + "\">" + role.getName() + "</option>";
+                        }
 
                         if (currentWelcomeChannelId != null) {
                             TextChannel welcomeChannel = guild.getTextChannelById(currentWelcomeChannelId);
@@ -147,12 +166,26 @@ public class Website {
                                 .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName)
                                 .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName)
                                 .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName)
+                                .replace("<!-- CHANNEL_OPTIONS_WELCOME -->", channelOptions)
+                                .replace("<!-- CHANNEL_OPTIONS_LEAVE -->", channelOptions)
+                                .replace("<!-- CHANNEL_OPTIONS_TICKET -->", channelOptions)
+                                .replace("<!-- CHANNEL_OPTIONS_MESSAGE_LOG -->", channelOptions)
+                                .replace("<!-- CATEGORY_OPTIONS_TICKET -->", categoryOptions)
+                                .replace("<!-- CATEGORY_OPTIONS_CLOSED_TICKET -->", categoryOptions)
+                                .replace("<!-- ROLE_OPTIONS -->", roleOptions)
                                 .replace("<!-- TICKET_OPTION_SUPPORT -->", ticketOptions.get("support") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_REPORT -->", ticketOptions.get("report") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_APPLICATION -->", ticketOptions.get("application") ? "checked" : "")
                                 .replace("<!-- MOD_ROLE_NAME -->", dataManager.getModRole(guildId) != null ? guild.getRoleById(dataManager.getModRole(guildId)).getName() : "--not selected--")
                                 .replace("<!-- GUILD_ID -->", guildId)
-                                .replace("<!-- SESSION_KEY -->", sessionKey);
+                                .replace("<!-- SESSION_KEY -->", sessionKey)
+                                .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
+                                .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
+                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
+                                .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "")
+                                .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
+                                .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
+                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
