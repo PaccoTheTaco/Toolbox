@@ -9,15 +9,22 @@
         .dropdown-menu { display: none; margin-top: 10px; }
         .dropdown-container { margin-bottom: 20px; }
         .channel-selection { display: flex; flex-direction: column; align-items: center; }
-        .dropdown-buttons { display: flex; gap: 10px; margin-top: 10px; }
+        .dropdown-button { margin-top: 10px; }
         .ticket-options, .log-options { margin-top: 20px; }
         .ticket-option, .log-option { display: flex; align-items: center; margin-bottom: 10px; }
         .settings-container {
-            display: flex; justify-content: space-between; flex-wrap: wrap;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
         }
-        .left-side, .right-side { width: 48%; }
+        .left-side, .right-side {
+            width: 48%;
+        }
         @media (max-width: 768px) {
-            .left-side, .right-side { width: 100%; margin-bottom: 20px; }
+            .left-side, .right-side {
+                width: 100%;
+                margin-bottom: 20px;
+            }
         }
     </style>
 </head>
@@ -44,15 +51,12 @@
                 <div class="dropdown-container">
                     <label>Select Welcome Channel:</label>
                     <div class="channel-selection" id="welcomeChannelText">
-                        <span id="welcomeChannelName"><!-- WELCOME_CHANNEL_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('welcomeChannel')">Change</button>
-                            <button type="button" class="dropdown-button" onclick="deactivateChannel('welcomeChannel')">Deactivate</button>
-                        </div>
+                        <span id="welcomeChannelSelected"><!-- WELCOME_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('welcomeChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('welcomeChannel')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="welcomeChannelMenu">
-                        <select name="welcomeChannel" id="welcomeChannel">
-                            <!-- Populate channels dynamically -->
+                        <select name="welcomeChannel" id="welcomeChannel" onchange="updateSelection('welcomeChannel')">
                             <!-- CHANNEL_OPTIONS_WELCOME -->
                         </select>
                     </div>
@@ -61,15 +65,12 @@
                 <div class="dropdown-container">
                     <label>Select Leave Channel:</label>
                     <div class="channel-selection" id="leaveChannelText">
-                        <span id="leaveChannelName"><!-- LEAVE_CHANNEL_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('leaveChannel')">Change</button>
-                            <button type="button" class="dropdown-button" onclick="deactivateChannel('leaveChannel')">Deactivate</button>
-                        </div>
+                        <span id="leaveChannelSelected"><!-- LEAVE_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('leaveChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('leaveChannel')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="leaveChannelMenu">
-                        <select name="leaveChannel" id="leaveChannel">
-                            <!-- Populate channels dynamically -->
+                        <select name="leaveChannel" id="leaveChannel" onchange="updateSelection('leaveChannel')">
                             <!-- CHANNEL_OPTIONS_LEAVE -->
                         </select>
                     </div>
@@ -78,15 +79,12 @@
                 <div class="dropdown-container">
                     <label>Select Moderator Role:</label>
                     <div class="channel-selection" id="modRoleText">
-                        <span id="modRoleName"><!-- MOD_ROLE_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('modRole')">Change</button>
-                        </div>
+                        <span id="modRoleSelected"><!-- MOD_ROLE_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('modRole')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('modRole')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="modRoleMenu">
-                        <select name="modRole" id="modRole">
-                            <option value="none">--not selected--</option>
-                            <!-- Populate roles dynamically -->
+                        <select name="modRole" id="modRole" onchange="updateSelection('modRole')">
                             <!-- ROLE_OPTIONS -->
                         </select>
                     </div>
@@ -95,15 +93,12 @@
                 <div class="dropdown-container">
                     <label>Select Message Log Channel:</label>
                     <div class="channel-selection" id="messageLogChannelText">
-                        <span id="messageLogChannelName"><!-- MESSAGE_LOG_CHANNEL_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('messageLogChannel')">Change</button>
-                            <button type="button" class="dropdown-button" onclick="deactivateChannel('messageLogChannel')">Deactivate</button>
-                        </div>
+                        <span id="messageLogChannelSelected"><!-- MESSAGE_LOG_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('messageLogChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('messageLogChannel')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="messageLogChannelMenu">
-                        <select name="messageLogChannel" id="messageLogChannel">
-                            <!-- Populate channels dynamically -->
+                        <select name="messageLogChannel" id="messageLogChannel" onchange="updateSelection('messageLogChannel')">
                             <!-- CHANNEL_OPTIONS_MESSAGE_LOG -->
                         </select>
                     </div>
@@ -112,16 +107,16 @@
                 <div class="log-options">
                     <label>Log Options:</label>
                     <div class="log-option">
-                        <input type="checkbox" name="joinLogActive" <!-- JOIN_LOG_ACTIVE --> > Join Log
+                        <input type="checkbox" name="joinLogActive" id="joinLogActive" <!-- JOIN_LOG_ACTIVE -->/> Join Log
                     </div>
                     <div class="log-option">
-                        <input type="checkbox" name="leaveLogActive" <!-- LEAVE_LOG_ACTIVE --> > Leave Log
+                        <input type="checkbox" name="leaveLogActive" id="leaveLogActive" <!-- LEAVE_LOG_ACTIVE -->/> Leave Log
                     </div>
                     <div class="log-option">
-                        <input type="checkbox" name="changeNameLogActive" <!-- CHANGE_NAME_LOG_ACTIVE --> > Name Change Log
+                        <input type="checkbox" name="changeNameLogActive" id="changeNameLogActive" <!-- CHANGE_NAME_LOG_ACTIVE -->/> Name Change Log
                     </div>
                     <div class="log-option">
-                        <input type="checkbox" name="changeNicknameLogActive" <!-- CHANGE_NICKNAME_LOG_ACTIVE --> > Nickname Change Log
+                        <input type="checkbox" name="changeNicknameLogActive" id="changeNicknameLogActive" <!-- CHANGE_NICKNAME_LOG_ACTIVE -->/> Nickname Change Log
                     </div>
                 </div>
             </div>
@@ -130,15 +125,12 @@
                 <div class="dropdown-container">
                     <label>Select Ticket Channel:</label>
                     <div class="channel-selection" id="ticketChannelText">
-                        <span id="ticketChannelName"><!-- TICKET_CHANNEL_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketChannel')">Change</button>
-                            <button type="button" class="dropdown-button" onclick="deactivateChannel('ticketChannel')">Deactivate</button>
-                        </div>
+                        <span id="ticketChannelSelected"><!-- TICKET_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('ticketChannel')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="ticketChannelMenu">
-                        <select name="ticketChannel" id="ticketChannel">
-                            <!-- Populate channels dynamically -->
+                        <select name="ticketChannel" id="ticketChannel" onchange="updateSelection('ticketChannel')">
                             <!-- CHANNEL_OPTIONS_TICKET -->
                         </select>
                     </div>
@@ -147,14 +139,12 @@
                 <div class="dropdown-container">
                     <label>Select Ticket Category:</label>
                     <div class="channel-selection" id="ticketCategoryText">
-                        <span id="ticketCategoryName"><!-- TICKET_CATEGORY_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketCategory')">Change</button>
-                        </div>
+                        <span id="ticketCategorySelected"><!-- TICKET_CATEGORY_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('ticketCategory')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('ticketCategory')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="ticketCategoryMenu">
-                        <select name="ticketCategory" id="ticketCategory">
-                            <!-- Populate categories dynamically -->
+                        <select name="ticketCategory" id="ticketCategory" onchange="updateSelection('ticketCategory')">
                             <!-- CATEGORY_OPTIONS_TICKET -->
                         </select>
                     </div>
@@ -163,14 +153,12 @@
                 <div class="dropdown-container">
                     <label>Select Closed Ticket Category:</label>
                     <div class="channel-selection" id="closedTicketCategoryText">
-                        <span id="closedTicketCategoryName"><!-- CLOSED_TICKET_CATEGORY_NAME --></span>
-                        <div class="dropdown-buttons">
-                            <button type="button" class="dropdown-button" onclick="toggleDropdown('closedTicketCategory')">Change</button>
-                        </div>
+                        <span id="closedTicketCategorySelected"><!-- CLOSED_TICKET_CATEGORY_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('closedTicketCategory')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('closedTicketCategory')">Deactivate</button>
                     </div>
                     <div class="dropdown-menu" id="closedTicketCategoryMenu">
-                        <select name="closedTicketCategory" id="closedTicketCategory">
-                            <!-- Populate categories dynamically -->
+                        <select name="closedTicketCategory" id="closedTicketCategory" onchange="updateSelection('closedTicketCategory')">
                             <!-- CATEGORY_OPTIONS_CLOSED_TICKET -->
                         </select>
                     </div>
@@ -179,20 +167,19 @@
                 <div class="ticket-options">
                     <label>Ticket Options:</label>
                     <div class="ticket-option">
-                        <input type="checkbox" name="ticketOptionSupport" <!-- TICKET_OPTION_SUPPORT --> > Support
+                        <input type="checkbox" name="ticketOptionSupport" id="ticketOptionSupport" <!-- TICKET_OPTION_SUPPORT -->/> Support
                     </div>
                     <div class="ticket-option">
-                        <input type="checkbox" name="ticketOptionReport" <!-- TICKET_OPTION_REPORT --> > Report
+                        <input type="checkbox" name="ticketOptionReport" id="ticketOptionReport" <!-- TICKET_OPTION_REPORT -->/> Report
                     </div>
                     <div class="ticket-option">
-                        <input type="checkbox" name="ticketOptionApplication" <!-- TICKET_OPTION_APPLICATION --> > Application
+                        <input type="checkbox" name="ticketOptionApplication" id="ticketOptionApplication" <!-- TICKET_OPTION_APPLICATION -->/> Application
                     </div>
                 </div>
             </div>
         </div>
         <input type="hidden" name="guildId" value="<!-- GUILD_ID -->">
         <input type="hidden" name="sessionKey" value="<!-- SESSION_KEY -->">
-        <input type="hidden" id="deactivatedChannels" name="deactivatedChannels" value="">
         <button type="submit" class="save-button">Save</button>
     </form>
 </div>
@@ -211,13 +198,16 @@
         }
     }
 
-    function deactivateChannel(channelType) {
-        const select = document.getElementById(channelType);
-        const deactivatedChannels = document.getElementById('deactivatedChannels');
-        select.value = 'none';
-        document.getElementById(channelType + 'Name').innerText = '--deactivated--';
-        deactivatedChannels.value += `${channelType},`;
-        select.style.display = 'none';
+    function deactivateSelection(channelType) {
+        document.getElementById(channelType + 'Selected').textContent = '--deactivated--';
+        const dropdown = document.getElementById(channelType);
+        dropdown.value = 'none';
+    }
+
+    function updateSelection(channelType) {
+        const dropdown = document.getElementById(channelType);
+        const selectedOption = dropdown.options[dropdown.selectedIndex].text;
+        document.getElementById(channelType + 'Selected').textContent = selectedOption;
     }
 </script>
 </body>

@@ -233,56 +233,45 @@ public class DataManager {
 
     private ServerData getServerData(String guildId) {
         ServerData serverData = new ServerData();
-        Connection connection = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            connection = DatabaseManager.getConnection();
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID " +
                     "FROM server_data WHERE Server_ID = ?";
-            stmt = connection.prepareStatement(query);
-            stmt.setString(1, guildId);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                serverData.setWelcomeChannelId(rs.getString("welcome_channel_ID"));
-                serverData.setLeaveChannelId(rs.getString("leave_channel_ID"));
-                serverData.setWelcomeActive(rs.getBoolean("welcome_active"));
-                serverData.setLeaveActive(rs.getBoolean("leave_active"));
-                serverData.setTicketCategoryId(rs.getString("ticket_category_ID"));
-                serverData.setClosedTicketCategoryId(rs.getString("closed_ticket_category_ID"));
-                serverData.setModRoleId(rs.getString("mod_role_ID"));
-                serverData.setMessageLogChannelId(rs.getString("message_log_channel_ID"));
-                serverData.setSupportTicketActive(rs.getBoolean("support_ticket_active"));
-                serverData.setApplicationTicketActive(rs.getBoolean("application_ticket_active"));
-                serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
-                serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
-                serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
-                serverData.setTicketsActive(rs.getBoolean("tickets_active"));
-                serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
-                serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
-            } else {
-                System.err.println("No data found for guild ID: " + guildId);
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, guildId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        serverData.setWelcomeChannelId(rs.getString("welcome_channel_ID"));
+                        serverData.setLeaveChannelId(rs.getString("leave_channel_ID"));
+                        serverData.setWelcomeActive(rs.getBoolean("welcome_active"));
+                        serverData.setLeaveActive(rs.getBoolean("leave_active"));
+                        serverData.setTicketCategoryId(rs.getString("ticket_category_ID"));
+                        serverData.setClosedTicketCategoryId(rs.getString("closed_ticket_category_ID"));
+                        serverData.setModRoleId(rs.getString("mod_role_ID"));
+                        serverData.setMessageLogChannelId(rs.getString("message_log_channel_ID"));
+                        serverData.setSupportTicketActive(rs.getBoolean("support_ticket_active"));
+                        serverData.setApplicationTicketActive(rs.getBoolean("application_ticket_active"));
+                        serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
+                        serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
+                        serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
+                        serverData.setTicketsActive(rs.getBoolean("tickets_active"));
+                        serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
+                        serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
+                    } else {
+                        System.err.println("No data found for guild ID: " + guildId);
+                    }
+                }
             }
         } catch (SQLException e) {
             System.err.println("SQL error while retrieving server data for guild ID: " + guildId);
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
 
         return serverData;
     }
+
 
 
 

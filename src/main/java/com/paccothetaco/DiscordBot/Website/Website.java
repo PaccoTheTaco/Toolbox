@@ -88,28 +88,29 @@ public class Website {
                         String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
                         String currentTicketCategoryId = dataManager.getTicketCategory(guildId);
                         String currentClosedTicketCategoryId = dataManager.getClosedTicketCategory(guildId);
+                        String currentModRoleId = dataManager.getModRole(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
                         String currentTicketChannelName = "--deactivated--";
                         String currentMessageLogChannelName = "--deactivated--";
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
+                        String currentModRoleName = "--not selected--";
                         boolean joinLogActive = dataManager.isJoinLogActive(guildId);
                         boolean leaveLogActive = dataManager.isLeaveLogActive(guildId);
                         boolean changeNameLogActive = dataManager.isChangeNameLogActive(guildId);
                         boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
 
-                        // Get channel and category options
+                        // Get channel, category, and role options
                         String channelOptions = "";
                         String categoryOptions = "";
+                        String roleOptions = "";
                         for (TextChannel channel : guild.getTextChannels()) {
                             channelOptions += "<option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>";
                         }
                         for (Category category : guild.getCategories()) {
                             categoryOptions += "<option value=\"" + category.getId() + "\">" + category.getName() + "</option>";
                         }
-                        // Get role options
-                        String roleOptions = "";
                         for (Role role : guild.getRoles()) {
                             roleOptions += "<option value=\"" + role.getId() + "\">" + role.getName() + "</option>";
                         }
@@ -156,33 +157,41 @@ public class Website {
                             }
                         }
 
+                        if (currentModRoleId != null) {
+                            Role modRole = guild.getRoleById(currentModRoleId);
+                            if (modRole != null) {
+                                currentModRoleName = modRole.getName();
+                            }
+                        }
+
                         Map<String, Boolean> ticketOptions = dataManager.getTicketOptions(guildId);
 
                         String htmlTemplate = readFileAsString(System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments/settings.html");
-                        htmlTemplate = htmlTemplate.replace("<!-- SERVER_NAME -->", serverName)
-                                .replace("<!-- WELCOME_CHANNEL_NAME -->", currentWelcomeChannelName)
-                                .replace("<!-- LEAVE_CHANNEL_NAME -->", currentLeaveChannelName)
-                                .replace("<!-- TICKET_CHANNEL_NAME -->", currentTicketChannelName)
-                                .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName)
-                                .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName)
-                                .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName)
-                                .replace("<!-- CHANNEL_OPTIONS_WELCOME -->", channelOptions)
-                                .replace("<!-- CHANNEL_OPTIONS_LEAVE -->", channelOptions)
-                                .replace("<!-- CHANNEL_OPTIONS_TICKET -->", channelOptions)
-                                .replace("<!-- CHANNEL_OPTIONS_MESSAGE_LOG -->", channelOptions)
-                                .replace("<!-- CATEGORY_OPTIONS_TICKET -->", categoryOptions)
-                                .replace("<!-- CATEGORY_OPTIONS_CLOSED_TICKET -->", categoryOptions)
-                                .replace("<!-- ROLE_OPTIONS -->", roleOptions)
+                        htmlTemplate = htmlTemplate.replace("<!-- SERVER_NAME -->", serverName != null ? serverName : "")
+                                .replace("<!-- WELCOME_CHANNEL_NAME -->", currentWelcomeChannelName != null ? currentWelcomeChannelName : "--deactivated--")
+                                .replace("<!-- LEAVE_CHANNEL_NAME -->", currentLeaveChannelName != null ? currentLeaveChannelName : "--deactivated--")
+                                .replace("<!-- TICKET_CHANNEL_NAME -->", currentTicketChannelName != null ? currentTicketChannelName : "--deactivated--")
+                                .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName != null ? currentMessageLogChannelName : "--deactivated--")
+                                .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName != null ? currentTicketCategoryName : "--not set--")
+                                .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName != null ? currentClosedTicketCategoryName : "--not set--")
+                                .replace("<!-- CHANNEL_OPTIONS_WELCOME -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_LEAVE -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_TICKET -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_MESSAGE_LOG -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CATEGORY_OPTIONS_TICKET -->", categoryOptions != null ? categoryOptions : "")
+                                .replace("<!-- CATEGORY_OPTIONS_CLOSED_TICKET -->", categoryOptions != null ? categoryOptions : "")
+                                .replace("<!-- ROLE_OPTIONS -->", roleOptions != null ? roleOptions : "")
                                 .replace("<!-- TICKET_OPTION_SUPPORT -->", ticketOptions.get("support") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_REPORT -->", ticketOptions.get("report") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_APPLICATION -->", ticketOptions.get("application") ? "checked" : "")
-                                .replace("<!-- MOD_ROLE_NAME -->", dataManager.getModRole(guildId) != null ? guild.getRoleById(dataManager.getModRole(guildId)).getName() : "--not selected--")
-                                .replace("<!-- GUILD_ID -->", guildId)
-                                .replace("<!-- SESSION_KEY -->", sessionKey)
-                                .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "")
+                                .replace("<!-- MOD_ROLE_NAME -->", currentModRoleName != null ? currentModRoleName : "--not selected--")
+                                .replace("<!-- MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
+                                .replace("<!-- GUILD_ID -->", guildId != null ? guildId : "")
+                                .replace("<!-- SESSION_KEY -->", sessionKey != null ? sessionKey : "")
                                 .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
-                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "");
+                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
+                                .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -279,66 +288,74 @@ public class Website {
             String closedTicketCategoryId = req.getParameter("closedTicketCategory");
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
-            String deactivatedChannels = req.getParameter("deactivatedChannels");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
-            if (deactivatedChannels != null && !deactivatedChannels.isEmpty()) {
-                String[] channels = deactivatedChannels.split(",");
-                for (String channel : channels) {
-                    switch (channel) {
-                        case "welcomeChannel":
-                            dataManager.setWelcomeChannel(guildId, null);
-                            dataManager.setWelcomeActive(guildId, false);
-                            break;
-                        case "leaveChannel":
-                            dataManager.setLeaveChannel(guildId, null);
-                            dataManager.setLeaveActive(guildId, false);
-                            break;
-                        case "ticketChannel":
-                            dataManager.setTicketChannel(guildId, null);
-                            dataManager.setTicketsActive(guildId, false);
-                            break;
-                        case "messageLogChannel":
-                            dataManager.deactivateMessageLog(guildId);
-                            break;
-                    }
-                }
-                generalChanges = true;
-            }
-
-            // Restlicher Code für das Verarbeiten der Kanalauswahl
-
             // Welcome Channel Handling
             String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
             if (welcomeChannelId != null && !welcomeChannelId.equals(currentWelcomeChannelId)) {
-                dataManager.setWelcomeChannel(guildId, welcomeChannelId);
-                dataManager.setWelcomeActive(guildId, true);
-                generalChanges = true;
+                if ("none".equals(welcomeChannelId)) {
+                    if (currentWelcomeChannelId != null) {
+                        dataManager.setWelcomeChannel(guildId, null);
+                        dataManager.setWelcomeActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
+                    dataManager.setWelcomeChannel(guildId, welcomeChannelId);
+                    dataManager.setWelcomeActive(guildId, true);
+                    generalChanges = true;
+                }
             }
 
             // Leave Channel Handling
             String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
             if (leaveChannelId != null && !leaveChannelId.equals(currentLeaveChannelId)) {
-                dataManager.setLeaveChannel(guildId, leaveChannelId);
-                dataManager.setLeaveActive(guildId, true);
-                generalChanges = true;
+                if ("none".equals(leaveChannelId)) {
+                    if (currentLeaveChannelId != null) {
+                        dataManager.setLeaveChannel(guildId, null);
+                        dataManager.setLeaveActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
+                    dataManager.setLeaveChannel(guildId, leaveChannelId);
+                    dataManager.setLeaveActive(guildId, true);
+                    generalChanges = true;
+                }
             }
 
             // Ticket Channel Handling
             String currentTicketChannelId = dataManager.getTicketChannel(guildId);
             if (ticketChannelId != null && !ticketChannelId.equals(currentTicketChannelId)) {
-                dataManager.setTicketChannel(guildId, ticketChannelId);
-                dataManager.setTicketsActive(guildId, true);
-                ticketChanges = true;
+                if ("none".equals(ticketChannelId)) {
+                    if (currentTicketChannelId != null) {
+                        TextChannel channel = jda.getGuildById(guildId).getTextChannelById(currentTicketChannelId);
+                        if (channel != null) {
+                            dataManager.deleteOldTicketEmbed(guildId, channel);
+                        }
+                        dataManager.setTicketChannel(guildId, null);
+                        dataManager.setTicketsActive(guildId, false);
+                        ticketChanges = true;
+                    }
+                } else {
+                    dataManager.setTicketChannel(guildId, ticketChannelId);
+                    dataManager.setTicketsActive(guildId, true);
+                    ticketChanges = true;
+                }
             }
 
             // Message Log Channel Handling
             String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
             if (messageLogChannelId != null && !messageLogChannelId.equals(currentMessageLogChannelId)) {
-                dataManager.setMessageLogChannel(guildId, messageLogChannelId);
-                generalChanges = true;
+                if ("none".equals(messageLogChannelId)) {
+                    if (currentMessageLogChannelId != null) {
+                        dataManager.deactivateMessageLog(guildId);
+                        generalChanges = true;
+                    }
+                } else {
+                    dataManager.setMessageLogChannel(guildId, messageLogChannelId);
+                    generalChanges = true;
+                }
             }
 
             // Ticket Category Handling
@@ -382,6 +399,29 @@ public class Website {
                 ticketChanges = true;
             }
 
+            // Log Options Handling
+            boolean joinLogOption = req.getParameter("joinLogActive") != null;
+            boolean leaveLogOption = req.getParameter("leaveLogActive") != null;
+            boolean changeNameLogOption = req.getParameter("changeNameLogActive") != null;
+            boolean changeNicknameLogOption = req.getParameter("changeNicknameLogActive") != null;
+
+            if (joinLogOption != dataManager.isJoinLogActive(guildId)) {
+                dataManager.setJoinLogActive(guildId, joinLogOption);
+                generalChanges = true;
+            }
+            if (leaveLogOption != dataManager.isLeaveLogActive(guildId)) {
+                dataManager.setLeaveLogActive(guildId, leaveLogOption);
+                generalChanges = true;
+            }
+            if (changeNameLogOption != dataManager.isChangeNameLogActive(guildId)) {
+                dataManager.setChangeNameLogActive(guildId, changeNameLogOption);
+                generalChanges = true;
+            }
+            if (changeNicknameLogOption != dataManager.isChangeNicknameLogActive(guildId)) {
+                dataManager.setChangeNicknameLogActive(guildId, changeNicknameLogOption);
+                generalChanges = true;
+            }
+
             if (ticketChanges) {
                 Guild guild = jda.getGuildById(guildId);
                 if (guild != null) {
@@ -404,9 +444,7 @@ public class Website {
         }
     }
 
-
-
-        public static class VerifyServlet extends HttpServlet {
+    public static class VerifyServlet extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String sessionKey = req.getParameter("sk");
