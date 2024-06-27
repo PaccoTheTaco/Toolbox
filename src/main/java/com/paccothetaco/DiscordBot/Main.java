@@ -1,12 +1,15 @@
 package com.paccothetaco.DiscordBot;
 
-import com.paccothetaco.DiscordBot.Utils.CommandUtil;
-import com.paccothetaco.DiscordBot.Utils.SecretUtil;
-import com.paccothetaco.DiscordBot.Logsystem.LogListener;
-import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.GuildJoinLeaveListener;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.MessageLogListener;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.NameChangeListener;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.NicknameChangeListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
+import com.paccothetaco.DiscordBot.Utils.CommandUtil;
+import com.paccothetaco.DiscordBot.Utils.SecretUtil;
 import com.paccothetaco.DiscordBot.Website.Website;
+import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -56,7 +59,11 @@ public class Main {
                             new WelcomeAndLeave(dataManager),
                             new ButtonInteractListener(dataManager),
                             new SelectMenuInteractListener(dataManager),
-                            new LogListener(dataManager)
+                            new GuildJoinLeaveListener(dataManager),
+                            new NameChangeListener(dataManager),
+                            new NicknameChangeListener(dataManager),
+                            new MessageLogListener(dataManager)
+
                     )
                     .build()
                     .awaitReady();
