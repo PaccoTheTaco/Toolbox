@@ -179,9 +179,6 @@ public class Website {
                                 .replace("<!-- MOD_ROLE_NAME -->", dataManager.getModRole(guildId) != null ? guild.getRoleById(dataManager.getModRole(guildId)).getName() : "--not selected--")
                                 .replace("<!-- GUILD_ID -->", guildId)
                                 .replace("<!-- SESSION_KEY -->", sessionKey)
-                                .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
-                                .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
-                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
                                 .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "")
                                 .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
@@ -196,7 +193,6 @@ public class Website {
                         resp.getWriter().println("<p>Could not retrieve server details.</p>");
                     }
                 } else {
-                    // HTML directly included instead of reading from file
                     resp.setContentType("text/html");
                     resp.setStatus(HttpServletResponse.SC_OK);
                     resp.getWriter().println("<!DOCTYPE html>");
@@ -283,88 +279,89 @@ public class Website {
             String closedTicketCategoryId = req.getParameter("closedTicketCategory");
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
+            String deactivatedChannels = req.getParameter("deactivatedChannels");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
+            if (deactivatedChannels != null && !deactivatedChannels.isEmpty()) {
+                String[] channels = deactivatedChannels.split(",");
+                for (String channel : channels) {
+                    switch (channel) {
+                        case "welcomeChannel":
+                            dataManager.setWelcomeChannel(guildId, null);
+                            dataManager.setWelcomeActive(guildId, false);
+                            break;
+                        case "leaveChannel":
+                            dataManager.setLeaveChannel(guildId, null);
+                            dataManager.setLeaveActive(guildId, false);
+                            break;
+                        case "ticketChannel":
+                            dataManager.setTicketChannel(guildId, null);
+                            dataManager.setTicketsActive(guildId, false);
+                            break;
+                        case "messageLogChannel":
+                            dataManager.deactivateMessageLog(guildId);
+                            break;
+                    }
+                }
+                generalChanges = true;
+            }
+
+            // Restlicher Code für das Verarbeiten der Kanalauswahl
+
             // Welcome Channel Handling
-            if ("none".equals(welcomeChannelId)) {
-                if (dataManager.isWelcomeActive(guildId)) {
-                    dataManager.setWelcomeActive(guildId, false);
-                    dataManager.setWelcomeChannel(guildId, null);
-                    generalChanges = true;
-                }
-            } else {
-                if (!welcomeChannelId.equals(dataManager.getWelcomeChannelId(guildId))) {
-                    dataManager.setWelcomeChannel(guildId, welcomeChannelId);
-                    dataManager.setWelcomeActive(guildId, true);
-                    generalChanges = true;
-                }
+            String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
+            if (welcomeChannelId != null && !welcomeChannelId.equals(currentWelcomeChannelId)) {
+                dataManager.setWelcomeChannel(guildId, welcomeChannelId);
+                dataManager.setWelcomeActive(guildId, true);
+                generalChanges = true;
             }
 
             // Leave Channel Handling
-            if ("none".equals(leaveChannelId)) {
-                if (dataManager.isLeaveActive(guildId)) {
-                    dataManager.setLeaveActive(guildId, false);
-                    dataManager.setLeaveChannel(guildId, null);
-                    generalChanges = true;
-                }
-            } else {
-                if (!leaveChannelId.equals(dataManager.getLeaveChannelId(guildId))) {
-                    dataManager.setLeaveChannel(guildId, leaveChannelId);
-                    dataManager.setLeaveActive(guildId, true);
-                    generalChanges = true;
-                }
+            String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
+            if (leaveChannelId != null && !leaveChannelId.equals(currentLeaveChannelId)) {
+                dataManager.setLeaveChannel(guildId, leaveChannelId);
+                dataManager.setLeaveActive(guildId, true);
+                generalChanges = true;
             }
 
             // Ticket Channel Handling
-            if (ticketChannelId != null && "none".equals(ticketChannelId)) {
-                String currentTicketChannelId = dataManager.getTicketChannel(guildId);
-                if (currentTicketChannelId != null) {
-                    TextChannel channel = jda.getGuildById(guildId).getTextChannelById(currentTicketChannelId);
-                    if (channel != null) {
-                        dataManager.deleteOldTicketEmbed(guildId, channel);
-                    }
-                }
-                dataManager.setTicketChannel(guildId, null);
-                dataManager.setTicketsActive(guildId, false);
-            } else if (ticketChannelId != null) {
+            String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+            if (ticketChannelId != null && !ticketChannelId.equals(currentTicketChannelId)) {
                 dataManager.setTicketChannel(guildId, ticketChannelId);
                 dataManager.setTicketsActive(guildId, true);
                 ticketChanges = true;
             }
 
             // Message Log Channel Handling
-            if ("none".equals(messageLogChannelId)) {
-                dataManager.deactivateMessageLog(guildId);
+            String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
+            if (messageLogChannelId != null && !messageLogChannelId.equals(currentMessageLogChannelId)) {
+                dataManager.setMessageLogChannel(guildId, messageLogChannelId);
                 generalChanges = true;
-            } else {
-                if (!messageLogChannelId.equals(dataManager.getMessageLogChannel(guildId))) {
-                    dataManager.setMessageLogChannel(guildId, messageLogChannelId);
-                    generalChanges = true;
-                }
             }
 
             // Ticket Category Handling
-            if (ticketCategoryId != null && !"none".equals(ticketCategoryId)) {
+            if (ticketCategoryId != null && !ticketCategoryId.equals(dataManager.getTicketCategory(guildId)) && !"none".equals(ticketCategoryId)) {
                 dataManager.setTicketCategory(guildId, ticketCategoryId);
                 generalChanges = true;
             }
 
             // Closed Ticket Category Handling
-            if (closedTicketCategoryId != null && !"none".equals(closedTicketCategoryId)) {
+            if (closedTicketCategoryId != null && !closedTicketCategoryId.equals(dataManager.getClosedTicketCategory(guildId)) && !"none".equals(closedTicketCategoryId)) {
                 dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
                 generalChanges = true;
             }
 
             // Mod Role Handling
-            if ("none".equals(modRoleId)) {
-                if (dataManager.getModRole(guildId) != null) {
-                    dataManager.setModRole(guildId, null);
-                    generalChanges = true;
-                }
-            } else {
-                if (!modRoleId.equals(dataManager.getModRole(guildId))) {
+            String currentModRoleId = dataManager.getModRole(guildId);
+            if (modRoleId != null && !modRoleId.equals(currentModRoleId)) {
+                if ("none".equals(modRoleId)) {
+                    if (currentModRoleId != null) {
+                        dataManager.setModRole(guildId, null);
+                        generalChanges = true;
+                    }
+                } else {
                     dataManager.setModRole(guildId, modRoleId);
                     generalChanges = true;
                 }
@@ -375,9 +372,10 @@ public class Website {
             boolean reportOption = req.getParameter("ticketOptionReport") != null;
             boolean applicationOption = req.getParameter("ticketOptionApplication") != null;
 
-            if (supportOption != dataManager.getTicketOptions(guildId).get("support") ||
-                    reportOption != dataManager.getTicketOptions(guildId).get("report") ||
-                    applicationOption != dataManager.getTicketOptions(guildId).get("application")) {
+            Map<String, Boolean> currentTicketOptions = dataManager.getTicketOptions(guildId);
+            if (supportOption != currentTicketOptions.get("support") ||
+                    reportOption != currentTicketOptions.get("report") ||
+                    applicationOption != currentTicketOptions.get("application")) {
                 dataManager.setTicketOption(guildId, "support", supportOption);
                 dataManager.setTicketOption(guildId, "report", reportOption);
                 dataManager.setTicketOption(guildId, "application", applicationOption);
@@ -387,9 +385,9 @@ public class Website {
             if (ticketChanges) {
                 Guild guild = jda.getGuildById(guildId);
                 if (guild != null) {
-                    String currentTicketChannelId = dataManager.getTicketChannel(guildId);
-                    if (currentTicketChannelId != null) {
-                        TextChannel channel = guild.getTextChannelById(currentTicketChannelId);
+                    String updatedTicketChannelId = dataManager.getTicketChannel(guildId);
+                    if (updatedTicketChannelId != null) {
+                        TextChannel channel = guild.getTextChannelById(updatedTicketChannelId);
                         if (channel != null) {
                             TicketEmbedCommand ticketEmbedCommand = new TicketEmbedCommand(dataManager);
                             ticketEmbedCommand.sendNewTicketEmbed(channel, guildId, true);
@@ -406,7 +404,9 @@ public class Website {
         }
     }
 
-    public static class VerifyServlet extends HttpServlet {
+
+
+        public static class VerifyServlet extends HttpServlet {
         @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String sessionKey = req.getParameter("sk");
