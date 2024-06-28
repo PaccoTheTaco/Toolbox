@@ -90,6 +90,8 @@ public class CommandUtil extends ListenerAdapter {
 
     private void handleTicTacToe(SlashCommandInteractionEvent event) {
         String serverId = event.getGuild().getId();
+
+        // Überprüfen, ob bereits ein Spiel aktiv ist
         if (dataManager.isTicTacToeActive(serverId)) {
             event.reply("A Tic-Tac-Toe game is already running on this server.").setEphemeral(true).queue();
             return;
@@ -108,19 +110,38 @@ public class CommandUtil extends ListenerAdapter {
         System.out.println("Player 1: " + player1Name + " (ID: " + player1Id + ")");
     }
 
+
     private void handleJoinTicTacToe(ButtonInteractionEvent event) {
         String serverId = event.getGuild().getId();
+        String player2Id = event.getUser().getId();
+
+        // Überprüfen, ob das Spiel aktiv ist
         if (!dataManager.isTicTacToeActive(serverId)) {
             event.reply("No Tic-Tac-Toe game is running on this server.").setEphemeral(true).queue();
             return;
         }
 
-        String player2Id = event.getUser().getId();
+        // Spieler 1 ID abrufen
+        String player1Id = ticTacToe.getPlayer1Id();
+
+        // Überprüfen, ob Spieler 1 versucht, sich selbst beizutreten
+        if (player2Id.equals(player1Id)) {
+            event.reply("You cannot join your own game.").setEphemeral(true).queue();
+            return;
+        }
+
+        // Überprüfen, ob das Spiel bereits einen zweiten Spieler hat
+        if (ticTacToe.getPlayer2Id() != null) {
+            event.reply("A second player has already joined this game.").setEphemeral(true).queue();
+            return;
+        }
+
+        // Spieler 2 setzen und das Spiel starten
         ticTacToe.setPlayer2Id(player2Id);
-        dataManager.setTicTacToePlayers(serverId, ticTacToe.getPlayer1Id(), player2Id);
+        dataManager.setTicTacToePlayers(serverId, player1Id, player2Id);
         resetInactivityTimer(serverId);
 
-        String player1Name = getMemberEffectiveName(ticTacToe.getPlayer1Id(), event);
+        String player1Name = getMemberEffectiveName(player1Id, event);
         String player2Name = getMemberEffectiveName(player2Id, event);
 
         event.reply(player1Name + " (X) vs " + player2Name + " (O)\nThe game can begin, here is your board:\n" +
@@ -128,6 +149,7 @@ public class CommandUtil extends ListenerAdapter {
 
         System.out.println("Player 2: " + player2Name + " (ID: " + player2Id + ")");
     }
+
 
     private void handleMove(SlashCommandInteractionEvent event) {
         String serverId = event.getGuild().getId();

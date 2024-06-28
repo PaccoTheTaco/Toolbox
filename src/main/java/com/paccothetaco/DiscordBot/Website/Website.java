@@ -191,7 +191,14 @@ public class Website {
                                 .replace("<!-- LEAVE_LOG_ACTIVE -->", leaveLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
-                                .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "");
+                                .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "")
+                                .replace("<!-- CURRENT_WELCOME_CHANNEL_ID -->", currentWelcomeChannelId != null ? currentWelcomeChannelId : "")
+                                .replace("<!-- CURRENT_LEAVE_CHANNEL_ID -->", currentLeaveChannelId != null ? currentLeaveChannelId : "")
+                                .replace("<!-- CURRENT_TICKET_CHANNEL_ID -->", currentTicketChannelId != null ? currentTicketChannelId : "")
+                                .replace("<!-- CURRENT_MESSAGE_LOG_CHANNEL_ID -->", currentMessageLogChannelId != null ? currentMessageLogChannelId : "")
+                                .replace("<!-- CURRENT_TICKET_CATEGORY_ID -->", currentTicketCategoryId != null ? currentTicketCategoryId : "")
+                                .replace("<!-- CURRENT_CLOSED_TICKET_CATEGORY_ID -->", currentClosedTicketCategoryId != null ? currentClosedTicketCategoryId : "")
+                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
