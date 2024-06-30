@@ -68,7 +68,8 @@ public class Main {
                             new NameChangeListener(dataManager),
                             new NicknameChangeListener(dataManager),
                             new MessageLogListener(dataManager),
-                            new VoiceLogListener(dataManager)
+                            new VoiceLogListener(dataManager),
+                            new ChannelListener()
                     )
                     .build()
                     .awaitReady();
