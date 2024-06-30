@@ -32,19 +32,19 @@ public class VoiceLogListener extends ListenerAdapter {
         if (event.getChannelLeft() != null && event.getChannelJoined() == null) {
             // User left a voice channel
             embedBuilder.setTitle("Member left Voice Channel");
-            embedBuilder.addField("Channel", event.getChannelLeft().getName(), false);
             embedBuilder.addField("User", event.getMember().getAsMention(), false);
+            embedBuilder.addField("Channel", event.getChannelLeft().getName(), false);
         } else if (event.getChannelLeft() == null && event.getChannelJoined() != null) {
             // User joined a voice channel
             embedBuilder.setTitle("Member joined Voice Channel");
-            embedBuilder.addField("Channel", event.getChannelJoined().getName(), false);
             embedBuilder.addField("User", event.getMember().getAsMention(), false);
+            embedBuilder.addField("Channel", event.getChannelJoined().getName(), false);
         } else if (event.getChannelLeft() != null && event.getChannelJoined() != null) {
             // User switched voice channels
             embedBuilder.setTitle("Member switched Voice Channel");
+            embedBuilder.addField("User", event.getMember().getAsMention(), false);
             embedBuilder.addField("Before", event.getChannelLeft().getName(), false);
             embedBuilder.addField("After", event.getChannelJoined().getName(), false);
-            embedBuilder.addField("User", event.getMember().getAsMention(), false);
         }
 
         logChannel.sendMessageEmbeds(embedBuilder.build()).queue();

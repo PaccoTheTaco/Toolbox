@@ -17,6 +17,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import java.util.Timer;
@@ -48,6 +49,8 @@ public class Main {
                             GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.GUILD_VOICE_STATES,
                             GatewayIntent.GUILD_MESSAGES)
+                    .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .setMemberCachePolicy(MemberCachePolicy.all(MemberCachePolicy.ALL))
                     .enableCache(CacheFlag.MEMBER_OVERRIDES)
                     .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
