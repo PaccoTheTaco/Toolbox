@@ -99,6 +99,7 @@ public class Website {
                         boolean changeNameLogActive = dataManager.isChangeNameLogActive(guildId);
                         boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
+                        boolean channelLogActive = dataManager.isChannelLogActive(guildId);
 
                         // Get channel, category, and role options
                         String channelOptions = "";
@@ -196,7 +197,8 @@ public class Website {
                                 .replace("<!-- CURRENT_MESSAGE_LOG_CHANNEL_ID -->", currentMessageLogChannelId != null ? currentMessageLogChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CATEGORY_ID -->", currentTicketCategoryId != null ? currentTicketCategoryId : "")
                                 .replace("<!-- CURRENT_CLOSED_TICKET_CATEGORY_ID -->", currentClosedTicketCategoryId != null ? currentClosedTicketCategoryId : "")
-                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "");
+                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
+                                .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -405,11 +407,10 @@ public class Website {
             }
 
             // Log Options Handling
-            boolean joinLogOption = req.getParameter("joinLogActive") != null;
-            boolean leaveLogOption = req.getParameter("leaveLogActive") != null;
             boolean changeNameLogOption = req.getParameter("changeNameLogActive") != null;
             boolean changeNicknameLogOption = req.getParameter("changeNicknameLogActive") != null;
             boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
+            boolean channelLogOption = req.getParameter("channelLogActive") != null;
 
             if (changeNameLogOption != dataManager.isChangeNameLogActive(guildId)) {
                 dataManager.setChangeNameLogActive(guildId, changeNameLogOption);
@@ -421,6 +422,10 @@ public class Website {
             }
             if (voiceChannelLogOption != dataManager.isVoiceChannelLogActive(guildId)) {
                 dataManager.setVoiceChannelLogActive(guildId, voiceChannelLogOption);
+                generalChanges = true;
+            }
+            if (channelLogOption != dataManager.isChannelLogActive(guildId)) {
+                dataManager.setChannelLogActive(guildId, channelLogOption);
                 generalChanges = true;
             }
 
@@ -445,6 +450,7 @@ public class Website {
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
+
 
     public static class VerifyServlet extends HttpServlet {
         @Override

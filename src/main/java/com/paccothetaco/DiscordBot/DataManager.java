@@ -20,7 +20,7 @@ public class DataManager {
     public void checkAndAddServerIDs(JDA jda) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, Channel_Log_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false, false)";
 
             for (Guild guild : jda.getGuilds()) {
                 String serverID = guild.getId();
@@ -47,7 +47,7 @@ public class DataManager {
     public void addServerOnJoin(Guild guild) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, Channel_Log_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false, false)";
 
             String serverID = guild.getId();
 
@@ -238,7 +238,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "changeName_log_active, changeNickname_log_active, voice_channel_log_active " +
+                    "changeName_log_active, changeNickname_log_active, voice_channel_log_active, Channel_Log_active " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -263,6 +263,7 @@ public class DataManager {
                         serverData.setChangeNameLogActive(rs.getBoolean("changeName_log_active"));
                         serverData.setChangeNicknameLogActive(rs.getBoolean("changeNickname_log_active"));
                         serverData.setVoiceChannelLogActive(rs.getBoolean("voice_channel_log_active"));
+                        serverData.setChannelLogActive(rs.getBoolean("Channel_Log_active"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -274,9 +275,6 @@ public class DataManager {
         }
         return serverData;
     }
-
-
-
 
     public boolean isTicTacToeActive(String serverId) {
         String query = "SELECT TicTacToe_is_active FROM server_data WHERE Server_ID = ?";
@@ -343,6 +341,14 @@ public class DataManager {
         return getServerData(guildId).isVoiceChannelLogActive();
     }
 
+    public void setChannelLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "Channel_Log_active", isActive);
+    }
+
+    public boolean isChannelLogActive(String guildId) {
+        return getServerData(guildId).isChannelLogActive();
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -365,7 +371,7 @@ public class DataManager {
         private boolean changeNameLogActive;
         private boolean changeNicknameLogActive;
         private boolean voiceChannelLogActive;
-
+        private boolean channelLogActive;
 
         public boolean isChangeNameLogActive() { return changeNameLogActive; }
         public void setChangeNameLogActive(boolean changeNameLogActive) { this.changeNameLogActive = changeNameLogActive; }
@@ -373,6 +379,11 @@ public class DataManager {
         public void setChangeNicknameLogActive(boolean changeNicknameLogActive) { this.changeNicknameLogActive = changeNicknameLogActive; }
         public boolean isVoiceChannelLogActive() { return voiceChannelLogActive; }
         public boolean isTicTacToeActive() { return ticTacToeActive; }
+        public boolean isChannelLogActive() { return channelLogActive; }
+
+        public void setChannelLogActive(boolean channelLogActive) {
+            this.channelLogActive = channelLogActive;
+        }
 
         public void setVoiceChannelLogActive(boolean voiceChannelLogActive) {
             this.voiceChannelLogActive = voiceChannelLogActive;

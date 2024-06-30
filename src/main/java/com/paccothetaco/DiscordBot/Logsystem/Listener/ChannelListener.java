@@ -1,25 +1,32 @@
 package com.paccothetaco.DiscordBot.Logsystem.Listener;
 
+import com.paccothetaco.DiscordBot.DataManager;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.events.channel.ChannelCreateEvent;
 import net.dv8tion.jda.api.events.channel.ChannelDeleteEvent;
 import net.dv8tion.jda.api.events.channel.update.GenericChannelUpdateEvent;
-import net.dv8tion.jda.api.events.guild.override.PermissionOverrideUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.awt.*;
-import java.util.EnumSet;
 
 public class ChannelListener extends ListenerAdapter {
+    private DataManager dataManager;
+
+    public ChannelListener(DataManager dataManager) {
+        this.dataManager = dataManager;
+    }
 
     private static final String LOG_CHANNEL_ID = "1254398510439075910";
 
     @Override
     public void onChannelCreate(ChannelCreateEvent event) {
+        if (!dataManager.isChannelLogActive(event.getGuild().getId())) {
+            return;
+        }
+
         TextChannel logChannel = event.getGuild().getTextChannelById(LOG_CHANNEL_ID);
         if (logChannel == null) return;
 
@@ -44,6 +51,10 @@ public class ChannelListener extends ListenerAdapter {
 
     @Override
     public void onChannelDelete(ChannelDeleteEvent event) {
+        if (!dataManager.isChannelLogActive(event.getGuild().getId())) {
+            return;
+        }
+
         TextChannel logChannel = event.getGuild().getTextChannelById(LOG_CHANNEL_ID);
         if (logChannel == null) return;
 
@@ -57,6 +68,10 @@ public class ChannelListener extends ListenerAdapter {
 
     @Override
     public void onGenericChannelUpdate(GenericChannelUpdateEvent event) {
+        if (!dataManager.isChannelLogActive(event.getGuild().getId())) {
+            return;
+        }
+
         TextChannel logChannel = event.getGuild().getTextChannelById(LOG_CHANNEL_ID);
         if (logChannel == null) return;
 
