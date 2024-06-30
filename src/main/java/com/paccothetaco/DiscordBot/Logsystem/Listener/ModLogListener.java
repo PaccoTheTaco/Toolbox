@@ -38,7 +38,8 @@ public class ModLogListener extends ListenerAdapter {
             TextChannel logChannel = getLogChannel(event.getGuild());
             if (logChannel != null) {
                 User targetUser = event.getMember().getUser();
-                logModAction(logChannel, targetUser, "muted");
+                String action = event.isGuildMuted() ? "muted" : "unmuted";
+                logModAction(logChannel, targetUser, action);
             }
         }
     }
@@ -49,7 +50,8 @@ public class ModLogListener extends ListenerAdapter {
             TextChannel logChannel = getLogChannel(event.getGuild());
             if (logChannel != null) {
                 User targetUser = event.getMember().getUser();
-                logModAction(logChannel, targetUser, "deafened");
+                String action = event.isGuildDeafened() ? "deafened" : "undeafend";
+                logModAction(logChannel, targetUser, action);
             }
         }
     }
@@ -60,7 +62,8 @@ public class ModLogListener extends ListenerAdapter {
             TextChannel logChannel = getLogChannel(event.getGuild());
             if (logChannel != null) {
                 User targetUser = event.getMember().getUser();
-                logModAction(logChannel, targetUser, "timed out");
+                String action = event.getNewTimeOutEnd() != null ? "timed out" : "untimeouted";
+                logModAction(logChannel, targetUser, action);
             }
         }
     }
