@@ -238,7 +238,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "join_log_active, leave_log_active, changeName_log_active, changeNickname_log_active, voice_channel_log_active " +
+                    "changeName_log_active, changeNickname_log_active, voice_channel_log_active " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -260,8 +260,6 @@ public class DataManager {
                         serverData.setTicketsActive(rs.getBoolean("tickets_active"));
                         serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
                         serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
-                        serverData.setJoinLogActive(rs.getBoolean("join_log_active"));
-                        serverData.setLeaveLogActive(rs.getBoolean("leave_log_active"));
                         serverData.setChangeNameLogActive(rs.getBoolean("changeName_log_active"));
                         serverData.setChangeNicknameLogActive(rs.getBoolean("changeNickname_log_active"));
                         serverData.setVoiceChannelLogActive(rs.getBoolean("voice_channel_log_active"));
@@ -364,17 +362,11 @@ public class DataManager {
         private boolean ticTacToeActive;
         private String player1Id;
         private String player2Id;
-        private boolean joinLogActive;
-        private boolean leaveLogActive;
         private boolean changeNameLogActive;
         private boolean changeNicknameLogActive;
         private boolean voiceChannelLogActive;
 
 
-        public boolean isJoinLogActive() { return joinLogActive; }
-        public void setJoinLogActive(boolean joinLogActive) { this.joinLogActive = joinLogActive; }
-        public boolean isLeaveLogActive() { return leaveLogActive; }
-        public void setLeaveLogActive(boolean leaveLogActive) { this.leaveLogActive = leaveLogActive; }
         public boolean isChangeNameLogActive() { return changeNameLogActive; }
         public void setChangeNameLogActive(boolean changeNameLogActive) { this.changeNameLogActive = changeNameLogActive; }
         public boolean isChangeNicknameLogActive() { return changeNicknameLogActive; }
@@ -520,28 +512,12 @@ public class DataManager {
         }
     }
 
-    public void setJoinLogActive(String guildId, boolean isActive) {
-        updateServerData(guildId, "join_log_active", isActive);
-    }
-
-    public void setLeaveLogActive(String guildId, boolean isActive) {
-        updateServerData(guildId, "leave_log_active", isActive);
-    }
-
     public void setChangeNameLogActive(String guildId, boolean isActive) {
         updateServerData(guildId, "changeName_log_active", isActive);
     }
 
     public void setChangeNicknameLogActive(String guildId, boolean isActive) {
         updateServerData(guildId, "changeNickname_log_active", isActive);
-    }
-
-    public boolean isJoinLogActive(String guildId) {
-        return getServerData(guildId).isJoinLogActive();
-    }
-
-    public boolean isLeaveLogActive(String guildId) {
-        return getServerData(guildId).isLeaveLogActive();
     }
 
     public boolean isChangeNameLogActive(String guildId) {

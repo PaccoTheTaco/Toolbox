@@ -42,7 +42,13 @@ public class Main {
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MESSAGES)
+                    .enableIntents(
+                            GatewayIntent.MESSAGE_CONTENT,
+                            GatewayIntent.GUILD_VOICE_STATES,
+                            GatewayIntent.GUILD_MEMBERS,
+                            GatewayIntent.GUILD_VOICE_STATES,
+                            GatewayIntent.GUILD_MESSAGES)
+                    .enableCache(CacheFlag.MEMBER_OVERRIDES)
                     .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(
@@ -56,7 +62,6 @@ public class Main {
                             new WelcomeAndLeave(dataManager),
                             new ButtonInteractListener(dataManager),
                             new SelectMenuInteractListener(dataManager),
-                            new GuildJoinLeaveListener(dataManager),
                             new NameChangeListener(dataManager),
                             new NicknameChangeListener(dataManager),
                             new MessageLogListener(dataManager),

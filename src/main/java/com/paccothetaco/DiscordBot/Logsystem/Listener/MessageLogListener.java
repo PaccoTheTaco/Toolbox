@@ -49,4 +49,5 @@ public class MessageLogListener extends ListenerAdapter {
                 MessageLog.getAuthor(event.getMessageId()),
                 MessageLog.getContent(event.getMessageId()));
     }
+
 }

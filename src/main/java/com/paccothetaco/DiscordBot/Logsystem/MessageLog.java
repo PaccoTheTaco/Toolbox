@@ -21,16 +21,16 @@ public class MessageLog {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(Color.YELLOW)
                 .setTitle("Message Edited")
-                .addField("Author", author, false)
                 .addField("Before", before, false)
-                .addField("After", after, false);
+                .addField("After", after, false)
+                .addField("Author", author, false);
 
         logChannel.sendMessageEmbeds(embed.build()).queue();
     }
 
     public static void logMessageDeleted(TextChannel logChannel, String author, String content) {
         EmbedBuilder embed = new EmbedBuilder();
-        embed.setColor(Color.RED)
+        embed.setColor(Color.YELLOW)
                 .setTitle("Message Deleted")
                 .addField("Author", author, false)
                 .addField("Message", content, false);
@@ -50,3 +50,4 @@ public class MessageLog {
         return messageContents.getOrDefault(messageId, "Unknown Content");
     }
 }
+
