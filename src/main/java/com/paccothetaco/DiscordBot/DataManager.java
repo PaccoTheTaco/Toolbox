@@ -167,6 +167,14 @@ public class DataManager {
         updateServerData(guildId, option + "_ticket_active", active);
     }
 
+    public void setModLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "ModLog_active", isActive);
+    }
+
+    public boolean isModLogActive(String guildId) {
+        return getServerData(guildId).isModLogActive();
+    }
+
     public Map<String, Boolean> getTicketOptions(String guildId) {
         Map<String, Boolean> ticketOptions = new HashMap<>();
         ServerData serverData = getServerData(guildId);
@@ -238,7 +246,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "changeName_log_active, changeNickname_log_active, voice_channel_log_active, Channel_Log_active " +
+                    "changeName_log_active, changeNickname_log_active, voice_channel_log_active, Channel_Log_active, ModLog_active " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -264,6 +272,7 @@ public class DataManager {
                         serverData.setChangeNicknameLogActive(rs.getBoolean("changeNickname_log_active"));
                         serverData.setVoiceChannelLogActive(rs.getBoolean("voice_channel_log_active"));
                         serverData.setChannelLogActive(rs.getBoolean("Channel_Log_active"));
+                        serverData.setModLogActive(rs.getBoolean("ModLog_active"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -372,6 +381,7 @@ public class DataManager {
         private boolean changeNicknameLogActive;
         private boolean voiceChannelLogActive;
         private boolean channelLogActive;
+        private boolean modLogActive;
 
         public boolean isChangeNameLogActive() { return changeNameLogActive; }
         public void setChangeNameLogActive(boolean changeNameLogActive) { this.changeNameLogActive = changeNameLogActive; }
@@ -380,6 +390,10 @@ public class DataManager {
         public boolean isVoiceChannelLogActive() { return voiceChannelLogActive; }
         public boolean isTicTacToeActive() { return ticTacToeActive; }
         public boolean isChannelLogActive() { return channelLogActive; }
+        public boolean isModLogActive() { return modLogActive; }
+
+        public void setModLogActive(boolean modLogActive) { this.modLogActive = modLogActive; }
+
 
         public void setChannelLogActive(boolean channelLogActive) {
             this.channelLogActive = channelLogActive;

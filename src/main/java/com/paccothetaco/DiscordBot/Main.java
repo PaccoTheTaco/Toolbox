@@ -69,7 +69,8 @@ public class Main {
                             new NicknameChangeListener(dataManager),
                             new MessageLogListener(dataManager),
                             new VoiceLogListener(dataManager),
-                            new ChannelListener(dataManager)
+                            new ChannelListener(dataManager),
+                            new ModLogListener(dataManager)
                     )
                     .build()
                     .awaitReady();

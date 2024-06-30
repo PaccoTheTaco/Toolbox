@@ -100,6 +100,7 @@ public class Website {
                         boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
+                        boolean modLogActive = dataManager.isModLogActive(guildId); // New line
 
                         // Get channel, category, and role options
                         String channelOptions = "";
@@ -191,14 +192,15 @@ public class Website {
                                 .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
                                 .replace("<!-- VOICE_CHANNEL_LOG_ACTIVE -->", voiceChannelLogActive ? "checked" : "")
+                                .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "")
+                                .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "") // New line
                                 .replace("<!-- CURRENT_WELCOME_CHANNEL_ID -->", currentWelcomeChannelId != null ? currentWelcomeChannelId : "")
                                 .replace("<!-- CURRENT_LEAVE_CHANNEL_ID -->", currentLeaveChannelId != null ? currentLeaveChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CHANNEL_ID -->", currentTicketChannelId != null ? currentTicketChannelId : "")
                                 .replace("<!-- CURRENT_MESSAGE_LOG_CHANNEL_ID -->", currentMessageLogChannelId != null ? currentMessageLogChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CATEGORY_ID -->", currentTicketCategoryId != null ? currentTicketCategoryId : "")
                                 .replace("<!-- CURRENT_CLOSED_TICKET_CATEGORY_ID -->", currentClosedTicketCategoryId != null ? currentClosedTicketCategoryId : "")
-                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
-                                .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "");
+                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -283,6 +285,7 @@ public class Website {
                 resp.getWriter().println("<p>Invalid session key</p>");
             }
         }
+
 
         @Override
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -411,6 +414,7 @@ public class Website {
             boolean changeNicknameLogOption = req.getParameter("changeNicknameLogActive") != null;
             boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
             boolean channelLogOption = req.getParameter("channelLogActive") != null;
+            boolean modLogOption = req.getParameter("modLogActive") != null; // New line
 
             if (changeNameLogOption != dataManager.isChangeNameLogActive(guildId)) {
                 dataManager.setChangeNameLogActive(guildId, changeNameLogOption);
@@ -427,6 +431,10 @@ public class Website {
             if (channelLogOption != dataManager.isChannelLogActive(guildId)) {
                 dataManager.setChannelLogActive(guildId, channelLogOption);
                 generalChanges = true;
+            }
+            if (modLogOption != dataManager.isModLogActive(guildId)) { // New line
+                dataManager.setModLogActive(guildId, modLogOption); // New line
+                generalChanges = true; // New line
             }
 
             if (ticketChanges) {
