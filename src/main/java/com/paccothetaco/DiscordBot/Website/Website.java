@@ -100,6 +100,7 @@ public class Website {
                         boolean leaveLogActive = dataManager.isLeaveLogActive(guildId);
                         boolean changeNameLogActive = dataManager.isChangeNameLogActive(guildId);
                         boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
+                        boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
 
                         // Get channel, category, and role options
                         String channelOptions = "";
@@ -192,6 +193,7 @@ public class Website {
                                 .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
                                 .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
                                 .replace("<!-- JOIN_LOG_ACTIVE -->", joinLogActive ? "checked" : "")
+                                .replace("<!-- VOICE_CHANNEL_LOG_ACTIVE -->", voiceChannelLogActive ? "checked" : "")
                                 .replace("<!-- CURRENT_WELCOME_CHANNEL_ID -->", currentWelcomeChannelId != null ? currentWelcomeChannelId : "")
                                 .replace("<!-- CURRENT_LEAVE_CHANNEL_ID -->", currentLeaveChannelId != null ? currentLeaveChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CHANNEL_ID -->", currentTicketChannelId != null ? currentTicketChannelId : "")
@@ -411,6 +413,7 @@ public class Website {
             boolean leaveLogOption = req.getParameter("leaveLogActive") != null;
             boolean changeNameLogOption = req.getParameter("changeNameLogActive") != null;
             boolean changeNicknameLogOption = req.getParameter("changeNicknameLogActive") != null;
+            boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
 
             if (joinLogOption != dataManager.isJoinLogActive(guildId)) {
                 dataManager.setJoinLogActive(guildId, joinLogOption);
@@ -426,6 +429,10 @@ public class Website {
             }
             if (changeNicknameLogOption != dataManager.isChangeNicknameLogActive(guildId)) {
                 dataManager.setChangeNicknameLogActive(guildId, changeNicknameLogOption);
+                generalChanges = true;
+            }
+            if (voiceChannelLogOption != dataManager.isVoiceChannelLogActive(guildId)) {
+                dataManager.setVoiceChannelLogActive(guildId, voiceChannelLogOption);
                 generalChanges = true;
             }
 

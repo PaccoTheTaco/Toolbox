@@ -1,9 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
-import com.paccothetaco.DiscordBot.Logsystem.Listener.GuildJoinLeaveListener;
-import com.paccothetaco.DiscordBot.Logsystem.Listener.MessageLogListener;
-import com.paccothetaco.DiscordBot.Logsystem.Listener.NameChangeListener;
-import com.paccothetaco.DiscordBot.Logsystem.Listener.NicknameChangeListener;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
 import com.paccothetaco.DiscordBot.Utils.CommandUtil;
@@ -45,8 +42,8 @@ public class Main {
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS)
-                    .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
+                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MESSAGES)
+                    .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(
                             new ListenerAdapter() {
@@ -62,8 +59,8 @@ public class Main {
                             new GuildJoinLeaveListener(dataManager),
                             new NameChangeListener(dataManager),
                             new NicknameChangeListener(dataManager),
-                            new MessageLogListener(dataManager)
-
+                            new MessageLogListener(dataManager),
+                            new VoiceLogListener(dataManager)
                     )
                     .build()
                     .awaitReady();

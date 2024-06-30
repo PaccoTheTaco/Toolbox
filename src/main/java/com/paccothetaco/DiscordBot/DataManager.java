@@ -237,7 +237,8 @@ public class DataManager {
             String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
-                    "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID " +
+                    "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
+                    "join_log_active, leave_log_active, changeName_log_active, changeNickname_log_active, voice_channel_log_active " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -259,6 +260,11 @@ public class DataManager {
                         serverData.setTicketsActive(rs.getBoolean("tickets_active"));
                         serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
                         serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
+                        serverData.setJoinLogActive(rs.getBoolean("join_log_active"));
+                        serverData.setLeaveLogActive(rs.getBoolean("leave_log_active"));
+                        serverData.setChangeNameLogActive(rs.getBoolean("changeName_log_active"));
+                        serverData.setChangeNicknameLogActive(rs.getBoolean("changeNickname_log_active"));
+                        serverData.setVoiceChannelLogActive(rs.getBoolean("voice_channel_log_active"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -268,7 +274,6 @@ public class DataManager {
             System.err.println("SQL error while retrieving server data for guild ID: " + guildId);
             e.printStackTrace();
         }
-
         return serverData;
     }
 
@@ -332,6 +337,14 @@ public class DataManager {
         return new String[]{null, null};
     }
 
+    public void setVoiceChannelLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "voice_channel_log_active", isActive);
+    }
+
+    public boolean isVoiceChannelLogActive(String guildId) {
+        return getServerData(guildId).isVoiceChannelLogActive();
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -355,6 +368,8 @@ public class DataManager {
         private boolean leaveLogActive;
         private boolean changeNameLogActive;
         private boolean changeNicknameLogActive;
+        private boolean voiceChannelLogActive;
+
 
         public boolean isJoinLogActive() { return joinLogActive; }
         public void setJoinLogActive(boolean joinLogActive) { this.joinLogActive = joinLogActive; }
@@ -364,9 +379,11 @@ public class DataManager {
         public void setChangeNameLogActive(boolean changeNameLogActive) { this.changeNameLogActive = changeNameLogActive; }
         public boolean isChangeNicknameLogActive() { return changeNicknameLogActive; }
         public void setChangeNicknameLogActive(boolean changeNicknameLogActive) { this.changeNicknameLogActive = changeNicknameLogActive; }
+        public boolean isVoiceChannelLogActive() { return voiceChannelLogActive; }
+        public boolean isTicTacToeActive() { return ticTacToeActive; }
 
-        public boolean isTicTacToeActive() {
-            return ticTacToeActive;
+        public void setVoiceChannelLogActive(boolean voiceChannelLogActive) {
+            this.voiceChannelLogActive = voiceChannelLogActive;
         }
 
         public void setTicTacToeActive(boolean ticTacToeActive) {
