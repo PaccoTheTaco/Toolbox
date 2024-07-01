@@ -96,8 +96,7 @@ public class Website {
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
                         String currentModRoleName = "--not selected--";
-                        boolean changeNameLogActive = dataManager.isChangeNameLogActive(guildId);
-                        boolean changeNicknameLogActive = dataManager.isChangeNicknameLogActive(guildId);
+                        boolean userLogActive = dataManager.isUserLogActive(guildId);
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
                         boolean modLogActive = dataManager.isModLogActive(guildId); // New line
@@ -191,8 +190,7 @@ public class Website {
                                 .replace("<!-- MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
                                 .replace("<!-- GUILD_ID -->", guildId != null ? guildId : "")
                                 .replace("<!-- SESSION_KEY -->", sessionKey != null ? sessionKey : "")
-                                .replace("<!-- CHANGE_NAME_LOG_ACTIVE -->", changeNameLogActive ? "checked" : "")
-                                .replace("<!-- CHANGE_NICKNAME_LOG_ACTIVE -->", changeNicknameLogActive ? "checked" : "")
+                                .replace("<!-- USER_LOG_ACTIVE -->", userLogActive ? "checked" : "")
                                 .replace("<!-- VOICE_CHANNEL_LOG_ACTIVE -->", voiceChannelLogActive ? "checked" : "")
                                 .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "")
                                 .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "") // New line
@@ -413,20 +411,15 @@ public class Website {
             }
 
             // Log Options Handling
-            boolean changeNameLogOption = req.getParameter("changeNameLogActive") != null;
-            boolean changeNicknameLogOption = req.getParameter("changeNicknameLogActive") != null;
+            boolean userLogOption = req.getParameter("userLogActive") != null;
             boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
             boolean channelLogOption = req.getParameter("channelLogActive") != null;
             boolean modLogOption = req.getParameter("modLogActive") != null; // New line
             boolean roleLogOption = req.getParameter("roleLogActive") != null; // Added RoleLog_active
 
 
-            if (changeNameLogOption != dataManager.isChangeNameLogActive(guildId)) {
-                dataManager.setChangeNameLogActive(guildId, changeNameLogOption);
-                generalChanges = true;
-            }
-            if (changeNicknameLogOption != dataManager.isChangeNicknameLogActive(guildId)) {
-                dataManager.setChangeNicknameLogActive(guildId, changeNicknameLogOption);
+            if (userLogOption != dataManager.isUserLogActive(guildId)) {
+                dataManager.setUserLogActive(guildId, userLogOption);
                 generalChanges = true;
             }
             if (voiceChannelLogOption != dataManager.isVoiceChannelLogActive(guildId)) {
