@@ -73,6 +73,8 @@ public class RoleLogListener extends ListenerAdapter {
                     .addField("Rolename", roleName, false)
                     .addField("Deleted by", deleter != null ? deleter.getAsMention() : "Unknown", false)
                     .addField("Members with this Role", membersString.toString(), false);
+            embed.setFooter(deleter.getName());
+            embed.setThumbnail(deleter.getAvatarUrl());
             logMessage(guild, embed.build());
         });
     }
@@ -146,13 +148,15 @@ public class RoleLogListener extends ListenerAdapter {
         if (!dataManager.isRoleLogActive(guild.getId())) {
             return;
         }
-        Role role = event.getRoles().get(0);  // Assuming only one role is added at a time
+        Role role = event.getRoles().get(0);
         Member member = event.getMember();
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Role added")
                 .setColor(EMBED_COLOR)
                 .addField("Member", member.getAsMention(), false)
                 .addField("Added Role", role.getAsMention(), false);
+        embed.setThumbnail(member.getUser().getAvatarUrl());
+        embed.setFooter(member.getUser().getName());
         logMessage(guild, embed.build());
     }
 
@@ -162,13 +166,15 @@ public class RoleLogListener extends ListenerAdapter {
         if (!dataManager.isRoleLogActive(guild.getId())) {
             return;
         }
-        Role role = event.getRoles().get(0);  // Assuming only one role is removed at a time
+        Role role = event.getRoles().get(0);
         Member member = event.getMember();
         EmbedBuilder embed = new EmbedBuilder()
                 .setTitle("Role removed")
                 .setColor(EMBED_COLOR)
                 .addField("Member", member.getAsMention(), false)
                 .addField("Removed Role", role.getAsMention(), false);
+        embed.setThumbnail(member.getUser().getAvatarUrl());
+        embed.setFooter(member.getUser().getName());
         logMessage(guild, embed.build());
     }
 

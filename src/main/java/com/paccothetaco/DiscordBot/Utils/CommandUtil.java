@@ -34,7 +34,7 @@ public class CommandUtil extends ListenerAdapter {
             case "tictactoe" -> handleTicTacToe(event);
             case "move" -> handleMove(event);
             case "stopgame" -> handleStopGame(event);
-            case "toolboxgpt" -> handleToolboxGPT(event);  // Neuer Fall hinzugefügt
+            case "toolboxgpt" -> handleToolboxGPT(event);
 
         }
     }
@@ -91,7 +91,6 @@ public class CommandUtil extends ListenerAdapter {
     private void handleTicTacToe(SlashCommandInteractionEvent event) {
         String serverId = event.getGuild().getId();
 
-        // Überprüfen, ob bereits ein Spiel aktiv ist
         if (dataManager.isTicTacToeActive(serverId)) {
             event.reply("A Tic-Tac-Toe game is already running on this server.").setEphemeral(true).queue();
             return;
@@ -115,28 +114,23 @@ public class CommandUtil extends ListenerAdapter {
         String serverId = event.getGuild().getId();
         String player2Id = event.getUser().getId();
 
-        // Überprüfen, ob das Spiel aktiv ist
         if (!dataManager.isTicTacToeActive(serverId)) {
             event.reply("No Tic-Tac-Toe game is running on this server.").setEphemeral(true).queue();
             return;
         }
 
-        // Spieler 1 ID abrufen
         String player1Id = ticTacToe.getPlayer1Id();
 
-        // Überprüfen, ob Spieler 1 versucht, sich selbst beizutreten
         if (player2Id.equals(player1Id)) {
             event.reply("You cannot join your own game.").setEphemeral(true).queue();
             return;
         }
 
-        // Überprüfen, ob das Spiel bereits einen zweiten Spieler hat
         if (ticTacToe.getPlayer2Id() != null) {
             event.reply("A second player has already joined this game.").setEphemeral(true).queue();
             return;
         }
 
-        // Spieler 2 setzen und das Spiel starten
         ticTacToe.setPlayer2Id(player2Id);
         dataManager.setTicTacToePlayers(serverId, player1Id, player2Id);
         resetInactivityTimer(serverId);

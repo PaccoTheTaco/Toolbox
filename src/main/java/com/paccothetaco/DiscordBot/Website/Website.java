@@ -35,14 +35,12 @@ public class Website {
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
 
-        // Setze das Basisverzeichnis für statische Dateien
         String resourceBase = System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments";
         handler.setResourceBase(resourceBase);
         handler.addServlet(DefaultServlet.class, "/");
 
         server.setHandler(handler);
 
-        // Füge weitere Servlets hinzu, wenn notwendig
         handler.addServlet(new ServletHolder(new SettingsServlet()), "/settings");
         handler.addServlet(new ServletHolder(new VerifyServlet()), "/verify");
 
@@ -99,11 +97,10 @@ public class Website {
                         boolean userLogActive = dataManager.isUserLogActive(guildId);
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
-                        boolean modLogActive = dataManager.isModLogActive(guildId); // New line
-                        boolean roleLogActive = dataManager.isRoleLogActive(guildId); // Added RoleLog_active
+                        boolean modLogActive = dataManager.isModLogActive(guildId);
+                        boolean roleLogActive = dataManager.isRoleLogActive(guildId);
 
 
-                        // Get channel, category, and role options
                         String channelOptions = "";
                         String categoryOptions = "";
                         String roleOptions = "";
@@ -193,7 +190,7 @@ public class Website {
                                 .replace("<!-- USER_LOG_ACTIVE -->", userLogActive ? "checked" : "")
                                 .replace("<!-- VOICE_CHANNEL_LOG_ACTIVE -->", voiceChannelLogActive ? "checked" : "")
                                 .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "")
-                                .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "") // New line
+                                .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "")
                                 .replace("<!-- CURRENT_WELCOME_CHANNEL_ID -->", currentWelcomeChannelId != null ? currentWelcomeChannelId : "")
                                 .replace("<!-- CURRENT_LEAVE_CHANNEL_ID -->", currentLeaveChannelId != null ? currentLeaveChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CHANNEL_ID -->", currentTicketChannelId != null ? currentTicketChannelId : "")
@@ -303,7 +300,6 @@ public class Website {
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
-            // Welcome Channel Handling
             String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
             if (welcomeChannelId != null && !welcomeChannelId.equals(currentWelcomeChannelId)) {
                 if ("none".equals(welcomeChannelId)) {
@@ -319,7 +315,6 @@ public class Website {
                 }
             }
 
-            // Leave Channel Handling
             String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
             if (leaveChannelId != null && !leaveChannelId.equals(currentLeaveChannelId)) {
                 if ("none".equals(leaveChannelId)) {
@@ -335,7 +330,6 @@ public class Website {
                 }
             }
 
-            // Ticket Channel Handling
             String currentTicketChannelId = dataManager.getTicketChannel(guildId);
             if (ticketChannelId != null && !ticketChannelId.equals(currentTicketChannelId)) {
                 if ("none".equals(ticketChannelId)) {
@@ -355,7 +349,6 @@ public class Website {
                 }
             }
 
-            // Message Log Channel Handling
             String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
             if (messageLogChannelId != null && !messageLogChannelId.equals(currentMessageLogChannelId)) {
                 if ("none".equals(messageLogChannelId)) {
@@ -369,19 +362,16 @@ public class Website {
                 }
             }
 
-            // Ticket Category Handling
             if (ticketCategoryId != null && !ticketCategoryId.equals(dataManager.getTicketCategory(guildId)) && !"none".equals(ticketCategoryId)) {
                 dataManager.setTicketCategory(guildId, ticketCategoryId);
                 generalChanges = true;
             }
 
-            // Closed Ticket Category Handling
             if (closedTicketCategoryId != null && !closedTicketCategoryId.equals(dataManager.getClosedTicketCategory(guildId)) && !"none".equals(closedTicketCategoryId)) {
                 dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
                 generalChanges = true;
             }
 
-            // Mod Role Handling
             String currentModRoleId = dataManager.getModRole(guildId);
             if (modRoleId != null && !modRoleId.equals(currentModRoleId)) {
                 if ("none".equals(modRoleId)) {
@@ -395,7 +385,6 @@ public class Website {
                 }
             }
 
-            // Ticket Options Handling
             boolean supportOption = req.getParameter("ticketOptionSupport") != null;
             boolean reportOption = req.getParameter("ticketOptionReport") != null;
             boolean applicationOption = req.getParameter("ticketOptionApplication") != null;
@@ -410,12 +399,11 @@ public class Website {
                 ticketChanges = true;
             }
 
-            // Log Options Handling
             boolean userLogOption = req.getParameter("userLogActive") != null;
             boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
             boolean channelLogOption = req.getParameter("channelLogActive") != null;
-            boolean modLogOption = req.getParameter("modLogActive") != null; // New line
-            boolean roleLogOption = req.getParameter("roleLogActive") != null; // Added RoleLog_active
+            boolean modLogOption = req.getParameter("modLogActive") != null;
+            boolean roleLogOption = req.getParameter("roleLogActive") != null;
 
 
             if (userLogOption != dataManager.isUserLogActive(guildId)) {
@@ -430,12 +418,12 @@ public class Website {
                 dataManager.setChannelLogActive(guildId, channelLogOption);
                 generalChanges = true;
             }
-            if (modLogOption != dataManager.isModLogActive(guildId)) { // New line
-                dataManager.setModLogActive(guildId, modLogOption); // New line
-                generalChanges = true; // New line
+            if (modLogOption != dataManager.isModLogActive(guildId)) {
+                dataManager.setModLogActive(guildId, modLogOption);
+                generalChanges = true;
             }
-            if (roleLogOption != dataManager.isRoleLogActive(guildId)) { // Added RoleLog_active
-                dataManager.setRoleLogActive(guildId, roleLogOption); // Added RoleLog_active
+            if (roleLogOption != dataManager.isRoleLogActive(guildId)) {
+                dataManager.setRoleLogActive(guildId, roleLogOption);
                 generalChanges = true;
             }
 

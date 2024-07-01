@@ -141,6 +141,7 @@ public class ModLogListener extends ListenerAdapter {
         }
 
         embed.setThumbnail(targetUser.getAvatarUrl());
+        embed.setFooter(targetUser.getName());
         embed.setTimestamp(java.time.Instant.now());
 
         logChannel.sendMessageEmbeds(embed.build()).queue();
@@ -156,7 +157,6 @@ public class ModLogListener extends ListenerAdapter {
                     return;
                 }
             }
-            // Fallback if no audit log entry found
             callback.accept(null, "none");
         });
     }

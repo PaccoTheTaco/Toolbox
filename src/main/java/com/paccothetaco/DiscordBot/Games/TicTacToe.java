@@ -80,8 +80,8 @@ public class TicTacToe {
     }
 
     public boolean placeMark(int row, int col) {
-        row--; // Adjusting for 1-based indexing
-        col--; // Adjusting for 1-based indexing
+        row--;
+        col--;
         if ((row >= 0) && (row < 3)) {
             if ((col >= 0) && (col < 3)) {
                 if (board[row][col] == '-') {

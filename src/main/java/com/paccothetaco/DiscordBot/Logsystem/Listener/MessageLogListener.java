@@ -44,6 +44,8 @@ public class MessageLogListener extends ListenerAdapter {
                 .addField("Author", event.getAuthor().getAsMention(), false)
                 .addField("Before", getBeforeContent(event.getMessageId()), false)
                 .addField("After", event.getMessage().getContentDisplay(), false);
+        embed.setFooter(event.getAuthor().getName());
+        embed.setThumbnail(event.getAuthor().getAvatarUrl());
         logChannel.sendMessageEmbeds(embed.build()).queue();
     }
 
@@ -61,7 +63,6 @@ public class MessageLogListener extends ListenerAdapter {
                 .setTitle("Message Deleted")
                 .addField("Author", getAuthor(event.getMessageId()), false)
                 .addField("Message", getContent(event.getMessageId()), false);
-
         logChannel.sendMessageEmbeds(embed.build()).queue();
     }
 

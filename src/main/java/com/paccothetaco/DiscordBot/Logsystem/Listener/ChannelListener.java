@@ -45,6 +45,8 @@ public class ChannelListener extends ListenerAdapter {
 
         embed.addField("Channel Permissions", permissions, false);
         embed.addField("Created By", event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getAsTag(), false);
+        embed.setFooter(event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getName());
+        embed.setThumbnail(event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getAvatarUrl());
         embed.setColor(Color.GREEN);
         logChannel.sendMessageEmbeds(embed.build()).queue();
     }
@@ -62,6 +64,8 @@ public class ChannelListener extends ListenerAdapter {
         embed.setTitle("Channel Deleted");
         embed.addField("Channel Name", event.getChannel().getName(), false);
         embed.addField("Deleted By", event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getAsTag(), false);
+        embed.setFooter(event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getName());
+        embed.setThumbnail(event.getGuild().retrieveAuditLogs().complete().get(0).getUser().getAvatarUrl());
         embed.setColor(Color.RED);
         logChannel.sendMessageEmbeds(embed.build()).queue();
     }

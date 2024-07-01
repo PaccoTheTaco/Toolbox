@@ -31,7 +31,8 @@ public class UserLogListener extends ListenerAdapter {
                             .addField("User", event.getUser().getAsMention(), false)
                             .addField("From", event.getOldName(), false)
                             .addField("To", event.getNewName(), false);
-
+                    embed.setThumbnail(event.getUser().getAvatarUrl());
+                    embed.setFooter(event.getUser().getName());
                     logChannel.sendMessageEmbeds(embed.build()).queue();
                 } else {
                     System.err.println("Log channel is null for guild: " + guild.getId());
@@ -59,7 +60,8 @@ public class UserLogListener extends ListenerAdapter {
                             .addField("User", event.getMember().getUser().getAsMention(), false)
                             .addField("From", oldNickname, false)
                             .addField("To", newNickname, false);
-
+                    embed.setThumbnail(event.getUser().getAvatarUrl());
+                    embed.setFooter(event.getUser().getName());
                     logChannel.sendMessageEmbeds(embed.build()).queue();
                 }
             }
@@ -79,7 +81,8 @@ public class UserLogListener extends ListenerAdapter {
                             .setTitle("Avatar Change")
                             .addField("User", event.getUser().getAsMention(), false)
                             .setThumbnail(event.getUser().getAvatarUrl());
-
+                    embed.setThumbnail(event.getUser().getAvatarUrl());
+                    embed.setFooter(event.getUser().getName());
                     logChannel.sendMessageEmbeds(embed.build()).queue();
                 } else {
                     System.err.println("Log channel is null for guild: " + guild.getId());
