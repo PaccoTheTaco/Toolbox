@@ -101,6 +101,8 @@ public class Website {
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
                         boolean modLogActive = dataManager.isModLogActive(guildId); // New line
+                        boolean roleLogActive = dataManager.isRoleLogActive(guildId); // Added RoleLog_active
+
 
                         // Get channel, category, and role options
                         String channelOptions = "";
@@ -200,7 +202,8 @@ public class Website {
                                 .replace("<!-- CURRENT_MESSAGE_LOG_CHANNEL_ID -->", currentMessageLogChannelId != null ? currentMessageLogChannelId : "")
                                 .replace("<!-- CURRENT_TICKET_CATEGORY_ID -->", currentTicketCategoryId != null ? currentTicketCategoryId : "")
                                 .replace("<!-- CURRENT_CLOSED_TICKET_CATEGORY_ID -->", currentClosedTicketCategoryId != null ? currentClosedTicketCategoryId : "")
-                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "");
+                                .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
+                                .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -415,6 +418,8 @@ public class Website {
             boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
             boolean channelLogOption = req.getParameter("channelLogActive") != null;
             boolean modLogOption = req.getParameter("modLogActive") != null; // New line
+            boolean roleLogOption = req.getParameter("roleLogActive") != null; // Added RoleLog_active
+
 
             if (changeNameLogOption != dataManager.isChangeNameLogActive(guildId)) {
                 dataManager.setChangeNameLogActive(guildId, changeNameLogOption);
@@ -436,6 +441,11 @@ public class Website {
                 dataManager.setModLogActive(guildId, modLogOption); // New line
                 generalChanges = true; // New line
             }
+            if (roleLogOption != dataManager.isRoleLogActive(guildId)) { // Added RoleLog_active
+                dataManager.setRoleLogActive(guildId, roleLogOption); // Added RoleLog_active
+                generalChanges = true;
+            }
+
 
             if (ticketChanges) {
                 Guild guild = jda.getGuildById(guildId);
