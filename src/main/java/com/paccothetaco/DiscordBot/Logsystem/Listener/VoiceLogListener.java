@@ -27,7 +27,7 @@ public class VoiceLogListener extends ListenerAdapter {
 
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setColor(Color.BLUE);
-        embedBuilder.setFooter(event.getMember().getEffectiveName(), event.getMember().getUser().getAvatarUrl());
+        embedBuilder.setFooter(event.getMember().getEffectiveName());
 
         if (event.getChannelLeft() != null && event.getChannelJoined() == null) {
             // User left a voice channel
