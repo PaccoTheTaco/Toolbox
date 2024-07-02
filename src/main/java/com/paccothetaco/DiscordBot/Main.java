@@ -48,11 +48,11 @@ public class Main {
                             GatewayIntent.GUILD_VOICE_STATES,
                             GatewayIntent.GUILD_MEMBERS,
                             GatewayIntent.GUILD_VOICE_STATES,
-                            GatewayIntent.GUILD_MESSAGES)
+                            GatewayIntent.GUILD_MESSAGES,
+                            GatewayIntent.GUILD_EMOJIS_AND_STICKERS)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.all(MemberCachePolicy.ALL))
                     .enableCache(CacheFlag.MEMBER_OVERRIDES)
-                    .disableCache(CacheFlag.EMOJI, CacheFlag.STICKER)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(
                             new ListenerAdapter() {

@@ -2,8 +2,9 @@ package com.paccothetaco.DiscordBot.Logsystem.Listener;
 
 import com.paccothetaco.DiscordBot.DataManager;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.audit.ActionType;
+import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.emoji.EmojiAddedEvent;
 import net.dv8tion.jda.api.events.emoji.EmojiRemovedEvent;
@@ -23,22 +24,40 @@ public class ServerLogListener extends ListenerAdapter {
 
     @Override
     public void onEmojiAdded(@NotNull EmojiAddedEvent event) {
-        Member member = event.getGuild().retrieveMemberById(event.getEmoji().getId()).complete();
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("Emoji added")
-                .setDescription(String.format("Added Emoji: %s\nAdded by: %s", event.getEmoji().getAsMention(), member != null ? member.getEffectiveName() : "Unknown"))
-                .setColor(Color.BLUE);
-        logServerActivity(event.getGuild(), embed);
+        event.getGuild().retrieveAuditLogs().type(ActionType.EMOJI_CREATE).limit(1).queue(entries -> {
+            if (!entries.isEmpty()) {
+                AuditLogEntry entry = entries.get(0);
+                event.getGuild().retrieveMemberById(entry.getUserId()).queue(member -> {
+                    String memberName = (member != null) ? member.getAsMention() : "Unknown";
+
+                    EmbedBuilder embed = new EmbedBuilder()
+                            .setTitle("Emoji added")
+                            .setDescription(String.format("Added Emoji: %s\nAdded by: %s", event.getEmoji().getAsMention(), memberName))
+                            .setColor(Color.BLUE);
+
+                    logServerActivity(event.getGuild(), embed);
+                });
+            }
+        });
     }
 
     @Override
     public void onEmojiRemoved(@NotNull EmojiRemovedEvent event) {
-        Member member = event.getGuild().retrieveMemberById(event.getEmoji().getId()).complete();
-        EmbedBuilder embed = new EmbedBuilder()
-                .setTitle("Emoji removed")
-                .setDescription(String.format("Removed Emoji: %s\nRemoved by: %s", event.getEmoji().getAsMention(), member != null ? member.getEffectiveName() : "Unknown"))
-                .setColor(Color.BLUE);
-        logServerActivity(event.getGuild(), embed);
+        event.getGuild().retrieveAuditLogs().type(ActionType.EMOJI_DELETE).limit(1).queue(entries -> {
+            if (!entries.isEmpty()) {
+                AuditLogEntry entry = entries.get(0);
+                event.getGuild().retrieveMemberById(entry.getUserId()).queue(member -> {
+                    String memberName = (member != null) ? member.getAsMention() : "Unknown";
+
+                    EmbedBuilder embed = new EmbedBuilder()
+                            .setTitle("Emoji removed")
+                            .setDescription(String.format("Removed Emoji: %s\nRemoved by: %s", event.getEmoji().getAsMention(), memberName))
+                            .setColor(Color.BLUE);
+
+                    logServerActivity(event.getGuild(), embed);
+                });
+            }
+        });
     }
 
     @Override
@@ -47,6 +66,7 @@ public class ServerLogListener extends ListenerAdapter {
                 .setTitle("Boost count updated")
                 .setDescription(String.format("Boost count: %d Boosts", event.getNewBoostCount()))
                 .setColor(Color.BLUE);
+
         logServerActivity(event.getGuild(), embed);
     }
 
