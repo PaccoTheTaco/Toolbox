@@ -190,3 +190,44 @@ h1 {
 .save-button:hover {
     background-color: #555;
 }
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-left: 10px; /* Added margin to separate checkbox and label */
+}
+
+/* Tooltip text */
+.tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position above the tooltip */
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+.log-option {
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.log-option input[type="checkbox"] {
+    margin-right: 10px;
+}
