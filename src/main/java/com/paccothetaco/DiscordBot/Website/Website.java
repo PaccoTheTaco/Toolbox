@@ -99,7 +99,7 @@ public class Website {
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
                         boolean modLogActive = dataManager.isModLogActive(guildId);
                         boolean roleLogActive = dataManager.isRoleLogActive(guildId);
-
+                        boolean serverLogActive = dataManager.isServerLogActive(guildId);
 
                         String channelOptions = "";
                         String categoryOptions = "";
@@ -198,7 +198,8 @@ public class Website {
                                 .replace("<!-- CURRENT_TICKET_CATEGORY_ID -->", currentTicketCategoryId != null ? currentTicketCategoryId : "")
                                 .replace("<!-- CURRENT_CLOSED_TICKET_CATEGORY_ID -->", currentClosedTicketCategoryId != null ? currentClosedTicketCategoryId : "")
                                 .replace("<!-- CURRENT_MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
-                                .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "");
+                                .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "")
+                                .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -404,7 +405,7 @@ public class Website {
             boolean channelLogOption = req.getParameter("channelLogActive") != null;
             boolean modLogOption = req.getParameter("modLogActive") != null;
             boolean roleLogOption = req.getParameter("roleLogActive") != null;
-
+            boolean serverLogOption = req.getParameter("serverLogActive") != null;
 
             if (userLogOption != dataManager.isUserLogActive(guildId)) {
                 dataManager.setUserLogActive(guildId, userLogOption);
@@ -426,7 +427,10 @@ public class Website {
                 dataManager.setRoleLogActive(guildId, roleLogOption);
                 generalChanges = true;
             }
-
+            if (serverLogOption != dataManager.isServerLogActive(guildId)) {
+                dataManager.setServerLogActive(guildId, serverLogOption);
+                generalChanges = true;
+            }
 
             if (ticketChanges) {
                 Guild guild = jda.getGuildById(guildId);
@@ -441,15 +445,12 @@ public class Website {
                     }
                 }
             }
-
             if (generalChanges || ticketChanges) {
                 dataManager.notifyListeners(guildId);
             }
-
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
-
 
     public static class VerifyServlet extends HttpServlet {
         @Override

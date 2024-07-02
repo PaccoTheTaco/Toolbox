@@ -171,6 +171,14 @@ public class DataManager {
         return getServerData(guildId).isRoleLogActive();
     }
 
+    public void setServerLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "server_log_active", isActive);
+    }
+
+    public boolean isServerLogActive(String guildId) {
+        return getServerData(guildId).isServerLogActive();
+    }
+
     public void setTicketOption(String guildId, String option, boolean active) {
         updateServerData(guildId, option + "_ticket_active", active);
     }
@@ -254,7 +262,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active " +
+                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -281,6 +289,7 @@ public class DataManager {
                         serverData.setChannelLogActive(rs.getBoolean("Channel_Log_active"));
                         serverData.setModLogActive(rs.getBoolean("ModLog_active"));
                         serverData.setRoleLogActive(rs.getBoolean("RoleLog_active"));
+                        serverData.setServerLogActive(rs.getBoolean("server_log_active"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -398,6 +407,7 @@ public class DataManager {
         private boolean channelLogActive;
         private boolean modLogActive;
         private boolean roleLogActive;
+        private boolean serverLogActive;
 
         public boolean isUserLogActive() { return userLogActive;}
         public boolean isVoiceChannelLogActive() {return voiceChannelLogActive;}
@@ -405,6 +415,11 @@ public class DataManager {
         public boolean isChannelLogActive() { return channelLogActive; }
         public boolean isModLogActive() { return modLogActive; }
         public boolean isRoleLogActive() { return roleLogActive; }
+        public boolean isServerLogActive() { return serverLogActive; }
+
+        public void setServerLogActive(boolean serverLogActive) {
+            this.serverLogActive = serverLogActive;
+        }
 
         public void setRoleLogActive(boolean roleLogActive) {
             this.roleLogActive = roleLogActive;

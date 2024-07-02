@@ -70,7 +70,8 @@ public class Main {
                             new VoiceLogListener(dataManager),
                             new ChannelListener(dataManager),
                             new ModLogListener(dataManager),
-                            new RoleLogListener(dataManager)
+                            new RoleLogListener(dataManager),
+                            new ServerLogListener(dataManager)
                     )
                     .build()
                     .awaitReady();
