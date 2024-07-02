@@ -24,14 +24,19 @@ public class MessageLogListener extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (!event.getAuthor().isBot()) {
-            messageContents.put(event.getMessageId(), event.getMessage().getContentRaw());
-            messageAuthors.put(event.getMessageId(), event.getAuthor().getAsMention());
+            String guildId = event.getGuild().getId();
+            if (dataManager.isMessageLogActive(guildId)) {
+                messageContents.put(event.getMessageId(), event.getMessage().getContentRaw());
+                messageAuthors.put(event.getMessageId(), event.getAuthor().getAsMention());
+            }
         }
     }
 
     @Override
     public void onMessageUpdate(MessageUpdateEvent event) {
         String guildId = event.getGuild().getId();
+        if (!dataManager.isMessageLogActive(guildId)) return;
+
         String logChannelId = dataManager.getMessageLogChannel(guildId);
         if (logChannelId == null) return;
 
@@ -52,6 +57,8 @@ public class MessageLogListener extends ListenerAdapter {
     @Override
     public void onMessageDelete(MessageDeleteEvent event) {
         String guildId = event.getGuild().getId();
+        if (!dataManager.isMessageLogActive(guildId)) return;
+
         String logChannelId = dataManager.getMessageLogChannel(guildId);
         if (logChannelId == null) return;
 

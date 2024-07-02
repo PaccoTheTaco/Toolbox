@@ -100,6 +100,7 @@ public class Website {
                         boolean modLogActive = dataManager.isModLogActive(guildId);
                         boolean roleLogActive = dataManager.isRoleLogActive(guildId);
                         boolean serverLogActive = dataManager.isServerLogActive(guildId);
+                        boolean messageLogActive = dataManager.isMessageLogActive(guildId);
 
                         String channelOptions = "";
                         String categoryOptions = "";
@@ -192,7 +193,8 @@ public class Website {
                                 .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "")
                                 .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "")
                                 .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "")
-                                .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "");
+                                .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "")
+                                .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -399,6 +401,7 @@ public class Website {
             boolean modLogOption = req.getParameter("modLogActive") != null;
             boolean roleLogOption = req.getParameter("roleLogActive") != null;
             boolean serverLogOption = req.getParameter("serverLogActive") != null;
+            boolean messageLogOption = req.getParameter("messageLogActive") != null;
 
             if (userLogOption != dataManager.isUserLogActive(guildId)) {
                 dataManager.setUserLogActive(guildId, userLogOption);
@@ -422,6 +425,10 @@ public class Website {
             }
             if (serverLogOption != dataManager.isServerLogActive(guildId)) {
                 dataManager.setServerLogActive(guildId, serverLogOption);
+                generalChanges = true;
+            }
+            if (messageLogOption != dataManager.isMessageLogActive(guildId)) {
+                dataManager.setMessageLogActive(guildId, messageLogOption);
                 generalChanges = true;
             }
 
