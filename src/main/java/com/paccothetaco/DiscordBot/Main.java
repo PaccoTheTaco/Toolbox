@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
+import com.paccothetaco.DiscordBot.Birthday.BirthdayCommand;
 import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
@@ -40,6 +41,7 @@ public class Main {
     public static void startBot() {
         DataManager dataManager = new DataManager();
         CommandUtil commandUtil = new CommandUtil(dataManager);
+        BirthdayCommand.scheduleBirthdayCheck(jda, dataManager);
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
@@ -93,7 +95,8 @@ public class Main {
                             .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true)),
                     Commands.slash("setbirthday", "Set your birthday")
                             .addOptions(new OptionData(OptionType.STRING, "birthday", "Your birthday in format YYYY-MM-DD", true)),
-                    Commands.slash("deletebirthday", "Delete your birthday")
+                    Commands.slash("deletebirthday", "Delete your birthday"),
+                    Commands.slash("testbirthday", "Test birthday notifications")
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

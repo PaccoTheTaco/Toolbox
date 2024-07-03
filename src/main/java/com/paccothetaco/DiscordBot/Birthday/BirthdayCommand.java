@@ -2,16 +2,28 @@ package com.paccothetaco.DiscordBot.Birthday;
 
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.DatabaseManager;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 
+import java.awt.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Date;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class BirthdayCommand {
+
+    private static final ZoneId MEZ = ZoneId.of("Europe/Berlin");
+    private static LocalDate lastCheckedDate = LocalDate.now(MEZ);
+
     public static void handleSetBirthday(SlashCommandInteractionEvent event, DataManager dataManager) {
         String guildId = event.getGuild().getId();
         String userId = event.getUser().getId();
@@ -27,7 +39,7 @@ public class BirthdayCommand {
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, userId);
                 stmt.setString(2, guildId);
-                stmt.setDate(3, Date.valueOf(birthday));
+                stmt.setDate(3, java.sql.Date.valueOf(birthday));
                 stmt.executeUpdate();
                 event.reply("Your birthday has been set to " + birthday).setEphemeral(true).queue();
             }
@@ -62,5 +74,85 @@ public class BirthdayCommand {
             e.printStackTrace();
             event.reply("An error occurred while deleting your birthday. Please try again later.").setEphemeral(true).queue();
         }
+    }
+
+    public static void scheduleBirthdayCheck(JDA jda, DataManager dataManager) {
+        Timer timer = new Timer();
+        ZonedDateTime now = ZonedDateTime.now(MEZ);
+        ZonedDateTime nextRun = now.withHour(1).withMinute(30).withSecond(0);
+
+        if (now.compareTo(nextRun) > 0) {
+            nextRun = nextRun.plusDays(1);
+        }
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                checkBirthdays(jda, dataManager);
+            }
+        }, java.util.Date.from(nextRun.toInstant()), 24 * 60 * 60 * 1000);
+
+        if (lastCheckedDate.isBefore(LocalDate.now(MEZ))) {
+            checkBirthdays(jda, dataManager);
+        }
+    }
+
+    public static synchronized void checkBirthdays(JDA jda, DataManager dataManager) {
+        LocalDate today = LocalDate.now(MEZ);
+        if (lastCheckedDate.equals(today)) {
+            return;
+        }
+
+        System.out.println("Checking birthdays for " + today);
+
+        try (Connection connection = DatabaseManager.getConnection()) {
+            String query = "SELECT user_id, server_id FROM birthdays WHERE MONTH(birthday) = ? AND DAY(birthday) = ?";
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setInt(1, today.getMonthValue());
+                stmt.setInt(2, today.getDayOfMonth());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        String userId = rs.getString("user_id");
+                        String serverId = rs.getString("server_id");
+
+                        if (dataManager.isBirthdayActive(serverId)) {
+                            String channelId = dataManager.getBirthdayChannelId(serverId);
+                            TextChannel channel = jda.getTextChannelById(channelId);
+                            User user = jda.getUserById(userId);
+
+                            if (channel != null && user != null) {
+                                sendBirthdayMessage(channel, user);
+                            } else {
+                                System.out.println("Channel or user not found for userId: " + userId + ", serverId: " + serverId);
+                            }
+                        } else {
+                            System.out.println("Birthday reminders are not active for serverId: " + serverId);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        lastCheckedDate = today;
+    }
+
+    private static void sendBirthdayMessage(TextChannel channel, User user) {
+        EmbedBuilder embed = new EmbedBuilder();
+        embed.setTitle("HAPPY BIRTHDAY :confetti_ball: :tada:");
+        embed.setDescription("Happy birthday " + user.getAsMention() + ", good luck in your new phase of life!");
+        embed.setThumbnail(user.getEffectiveAvatarUrl());
+        embed.setFooter(user.getName(), user.getEffectiveAvatarUrl());
+        embed.setColor(Color.ORANGE);
+
+        channel.sendMessageEmbeds(embed.build()).queue();
+    }
+
+    public static void handleTestBirthday(SlashCommandInteractionEvent event, DataManager dataManager) {
+        event.deferReply().setEphemeral(true).queue(hook -> {
+            checkBirthdays(event.getJDA(), dataManager);
+            hook.sendMessage("Birthday check executed.").setEphemeral(true).queue();
+        });
     }
 }

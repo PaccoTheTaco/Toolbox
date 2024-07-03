@@ -38,7 +38,17 @@ public class CommandUtil extends ListenerAdapter {
             case "toolboxgpt" -> handleToolboxGPT(event);
             case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
             case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
+            case "testbirthday" -> handeTestBirthday(event);
         }
+    }
+
+    public void handeTestBirthday (SlashCommandInteractionEvent event) {
+        if (event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
+            BirthdayCommand.handleTestBirthday(event, dataManager);
+        } else {
+            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
+        }
+        BirthdayCommand.handleTestBirthday(event, dataManager);
     }
 
     @Override

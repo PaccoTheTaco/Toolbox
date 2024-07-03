@@ -303,9 +303,25 @@ public class Website {
             String closedTicketCategoryId = req.getParameter("closedTicketCategory");
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
+            String birthdayChannelId = req.getParameter("birthdayChannel");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
+
+            String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
+            if (birthdayChannelId != null && !birthdayChannelId.equals(currentBirthdayChannelId)) {
+                if ("none".equals(birthdayChannelId)) {
+                    if (currentBirthdayChannelId != null) {
+                        dataManager.setBirthdayChannelId(guildId, null);
+                        dataManager.setBirthdayActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
+                    dataManager.setBirthdayChannelId(guildId, birthdayChannelId);
+                    dataManager.setBirthdayActive(guildId, true);
+                    generalChanges = true;
+                }
+            }
 
             String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
             if (welcomeChannelId != null && !welcomeChannelId.equals(currentWelcomeChannelId)) {
