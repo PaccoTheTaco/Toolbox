@@ -1,7 +1,10 @@
 package com.paccothetaco.DiscordBot.Utils;
 
+import com.paccothetaco.DiscordBot.Birthday.BirthdayCommand;
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Games.TicTacToe;
+import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
+import com.paccothetaco.DiscordBot.ToolboxGPT;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
@@ -10,12 +13,13 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class CommandUtil extends ListenerAdapter {
-    private DataManager dataManager;
+    private final DataManager dataManager;
     private TicTacToe ticTacToe;
     private Timer inactivityTimer;
 
@@ -32,6 +36,11 @@ public class CommandUtil extends ListenerAdapter {
             case "tictactoe" -> handleTicTacToe(event);
             case "move" -> handleMove(event);
             case "stopgame" -> handleStopGame(event);
+            case "toolboxgpt" -> handleToolboxGPT(event);
+            case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
+            case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
+            case "testbirthday" -> handleTestBirthday(event);
+            case "startgiveaway" -> handleGiveaway(event);
         }
     }
 
@@ -39,6 +48,18 @@ public class CommandUtil extends ListenerAdapter {
     public void onButtonInteraction(ButtonInteractionEvent event) {
         if (event.getComponentId().equals("join_tictactoe")) {
             handleJoinTicTacToe(event);
+        }
+    }
+
+    private void handleToolboxGPT(SlashCommandInteractionEvent event) {
+        String question = event.getOption("question").getAsString();
+
+        try {
+            String response = ToolboxGPT.getGPTResponse(question);
+            event.reply(response).queue();
+        } catch (IOException e) {
+            event.reply("Sorry, there was an error processing your request.").setEphemeral(true).queue();
+            e.printStackTrace();
         }
     }
 
@@ -74,6 +95,7 @@ public class CommandUtil extends ListenerAdapter {
 
     private void handleTicTacToe(SlashCommandInteractionEvent event) {
         String serverId = event.getGuild().getId();
+
         if (dataManager.isTicTacToeActive(serverId)) {
             event.reply("A Tic-Tac-Toe game is already running on this server.").setEphemeral(true).queue();
             return;
@@ -94,17 +116,30 @@ public class CommandUtil extends ListenerAdapter {
 
     private void handleJoinTicTacToe(ButtonInteractionEvent event) {
         String serverId = event.getGuild().getId();
+        String player2Id = event.getUser().getId();
+
         if (!dataManager.isTicTacToeActive(serverId)) {
             event.reply("No Tic-Tac-Toe game is running on this server.").setEphemeral(true).queue();
             return;
         }
 
-        String player2Id = event.getUser().getId();
+        String player1Id = ticTacToe.getPlayer1Id();
+
+        if (player2Id.equals(player1Id)) {
+            event.reply("You cannot join your own game.").setEphemeral(true).queue();
+            return;
+        }
+
+        if (ticTacToe.getPlayer2Id() != null) {
+            event.reply("A second player has already joined this game.").setEphemeral(true).queue();
+            return;
+        }
+
         ticTacToe.setPlayer2Id(player2Id);
-        dataManager.setTicTacToePlayers(serverId, ticTacToe.getPlayer1Id(), player2Id);
+        dataManager.setTicTacToePlayers(serverId, player1Id, player2Id);
         resetInactivityTimer(serverId);
 
-        String player1Name = getMemberEffectiveName(ticTacToe.getPlayer1Id(), event);
+        String player1Name = getMemberEffectiveName(player1Id, event);
         String player2Name = getMemberEffectiveName(player2Id, event);
 
         event.reply(player1Name + " (X) vs " + player2Name + " (O)\nThe game can begin, here is your board:\n" +
@@ -230,5 +265,19 @@ public class CommandUtil extends ListenerAdapter {
         }
 
         return sessionKey.toString();
+    }
+
+    private void handleTestBirthday(SlashCommandInteractionEvent event) {
+        if (!event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
+            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
+            return;
+        }
+
+        BirthdayCommand.handleTestBirthday(event, dataManager);
+    }
+
+    private void handleGiveaway(SlashCommandInteractionEvent event) {
+        Giveaways giveaways = new Giveaways();
+        giveaways.onSlashCommandInteraction(event);
     }
 }

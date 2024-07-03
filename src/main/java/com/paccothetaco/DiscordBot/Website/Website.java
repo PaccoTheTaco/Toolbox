@@ -35,14 +35,12 @@ public class Website {
         ServletContextHandler handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
         handler.setContextPath("/");
 
-        // Setze das Basisverzeichnis für statische Dateien
         String resourceBase = System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments";
         handler.setResourceBase(resourceBase);
         handler.addServlet(DefaultServlet.class, "/");
 
         server.setHandler(handler);
 
-        // Füge weitere Servlets hinzu, wenn notwendig
         handler.addServlet(new ServletHolder(new SettingsServlet()), "/settings");
         handler.addServlet(new ServletHolder(new VerifyServlet()), "/verify");
 
@@ -88,12 +86,36 @@ public class Website {
                         String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
                         String currentTicketCategoryId = dataManager.getTicketCategory(guildId);
                         String currentClosedTicketCategoryId = dataManager.getClosedTicketCategory(guildId);
+                        String currentModRoleId = dataManager.getModRole(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
                         String currentTicketChannelName = "--deactivated--";
                         String currentMessageLogChannelName = "--deactivated--";
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
+                        String currentModRoleName = "--not selected--";
+                        boolean userLogActive = dataManager.isUserLogActive(guildId);
+                        boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
+                        boolean channelLogActive = dataManager.isChannelLogActive(guildId);
+                        boolean modLogActive = dataManager.isModLogActive(guildId);
+                        boolean roleLogActive = dataManager.isRoleLogActive(guildId);
+                        boolean serverLogActive = dataManager.isServerLogActive(guildId);
+                        boolean messageLogActive = dataManager.isMessageLogActive(guildId);
+                        String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
+                        String currentBirthdayChannelName = "--deactivated--";
+
+                        String channelOptions = "";
+                        String categoryOptions = "";
+                        String roleOptions = "";
+                        for (TextChannel channel : guild.getTextChannels()) {
+                            channelOptions += "<option value=\"" + channel.getId() + "\">" + channel.getName() + "</option>";
+                        }
+                        for (Category category : guild.getCategories()) {
+                            categoryOptions += "<option value=\"" + category.getId() + "\">" + category.getName() + "</option>";
+                        }
+                        for (Role role : guild.getRoles()) {
+                            roleOptions += "<option value=\"" + role.getId() + "\">" + role.getName() + "</option>";
+                        }
 
                         if (currentWelcomeChannelId != null) {
                             TextChannel welcomeChannel = guild.getTextChannelById(currentWelcomeChannelId);
@@ -137,22 +159,53 @@ public class Website {
                             }
                         }
 
+                        if (currentModRoleId != null) {
+                            Role modRole = guild.getRoleById(currentModRoleId);
+                            if (modRole != null) {
+                                currentModRoleName = modRole.getName();
+                            }
+                        }
+
+                        if (currentBirthdayChannelId != null) {
+                            TextChannel birthdayChannel = guild.getTextChannelById(currentBirthdayChannelId);
+                            if (birthdayChannel != null) {
+                                currentBirthdayChannelName = birthdayChannel.getName();
+                            }
+                        }
+
                         Map<String, Boolean> ticketOptions = dataManager.getTicketOptions(guildId);
 
                         String htmlTemplate = readFileAsString(System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments/settings.html");
-                        htmlTemplate = htmlTemplate.replace("<!-- SERVER_NAME -->", serverName)
-                                .replace("<!-- WELCOME_CHANNEL_NAME -->", currentWelcomeChannelName)
-                                .replace("<!-- LEAVE_CHANNEL_NAME -->", currentLeaveChannelName)
-                                .replace("<!-- TICKET_CHANNEL_NAME -->", currentTicketChannelName)
-                                .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName)
-                                .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName)
-                                .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName)
+                        htmlTemplate = htmlTemplate.replace("<!-- SERVER_NAME -->", serverName != null ? serverName : "")
+                                .replace("<!-- WELCOME_CHANNEL_NAME -->", currentWelcomeChannelName != null ? currentWelcomeChannelName : "--deactivated--")
+                                .replace("<!-- LEAVE_CHANNEL_NAME -->", currentLeaveChannelName != null ? currentLeaveChannelName : "--deactivated--")
+                                .replace("<!-- TICKET_CHANNEL_NAME -->", currentTicketChannelName != null ? currentTicketChannelName : "--deactivated--")
+                                .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName != null ? currentMessageLogChannelName : "--deactivated--")
+                                .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName != null ? currentTicketCategoryName : "--not set--")
+                                .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName != null ? currentClosedTicketCategoryName : "--not set--")
+                                .replace("<!-- CHANNEL_OPTIONS_WELCOME -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_LEAVE -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_TICKET -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_MESSAGE_LOG -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CATEGORY_OPTIONS_TICKET -->", categoryOptions != null ? categoryOptions : "")
+                                .replace("<!-- CATEGORY_OPTIONS_CLOSED_TICKET -->", categoryOptions != null ? categoryOptions : "")
+                                .replace("<!-- ROLE_OPTIONS -->", roleOptions != null ? roleOptions : "")
                                 .replace("<!-- TICKET_OPTION_SUPPORT -->", ticketOptions.get("support") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_REPORT -->", ticketOptions.get("report") ? "checked" : "")
                                 .replace("<!-- TICKET_OPTION_APPLICATION -->", ticketOptions.get("application") ? "checked" : "")
-                                .replace("<!-- MOD_ROLE_NAME -->", dataManager.getModRole(guildId) != null ? guild.getRoleById(dataManager.getModRole(guildId)).getName() : "--not selected--")
-                                .replace("<!-- GUILD_ID -->", guildId)
-                                .replace("<!-- SESSION_KEY -->", sessionKey);
+                                .replace("<!-- MOD_ROLE_NAME -->", currentModRoleName != null ? currentModRoleName : "--not selected--")
+                                .replace("<!-- MOD_ROLE_ID -->", currentModRoleId != null ? currentModRoleId : "")
+                                .replace("<!-- GUILD_ID -->", guildId != null ? guildId : "")
+                                .replace("<!-- SESSION_KEY -->", sessionKey != null ? sessionKey : "")
+                                .replace("<!-- USER_LOG_ACTIVE -->", userLogActive ? "checked" : "")
+                                .replace("<!-- VOICE_CHANNEL_LOG_ACTIVE -->", voiceChannelLogActive ? "checked" : "")
+                                .replace("<!-- CHANNEL_LOG_ACTIVE -->", channelLogActive ? "checked" : "")
+                                .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "")
+                                .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "")
+                                .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "")
+                                .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "")
+                                .replace("<!-- BIRTHDAY_CHANNEL_NAME -->", currentBirthdayChannelName != null ? currentBirthdayChannelName : "--deactivated--")
+                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -163,7 +216,6 @@ public class Website {
                         resp.getWriter().println("<p>Could not retrieve server details.</p>");
                     }
                 } else {
-                    // HTML directly included instead of reading from file
                     resp.setContentType("text/html");
                     resp.setStatus(HttpServletResponse.SC_OK);
                     resp.getWriter().println("<!DOCTYPE html>");
@@ -239,6 +291,7 @@ public class Website {
             }
         }
 
+
         @Override
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String guildId = req.getParameter("guildId");
@@ -250,113 +303,168 @@ public class Website {
             String closedTicketCategoryId = req.getParameter("closedTicketCategory");
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
+            String birthdayChannelId = req.getParameter("birthdayChannel");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
-            // Welcome Channel Handling
-            if ("none".equals(welcomeChannelId)) {
-                if (dataManager.isWelcomeActive(guildId)) {
-                    dataManager.setWelcomeActive(guildId, false);
-                    dataManager.setWelcomeChannel(guildId, null);
+            String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
+            if (birthdayChannelId != null && !birthdayChannelId.equals(currentBirthdayChannelId)) {
+                if ("none".equals(birthdayChannelId)) {
+                    if (currentBirthdayChannelId != null) {
+                        dataManager.setBirthdayChannelId(guildId, null);
+                        dataManager.setBirthdayActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
+                    dataManager.setBirthdayChannelId(guildId, birthdayChannelId);
+                    dataManager.setBirthdayActive(guildId, true);
                     generalChanges = true;
                 }
-            } else {
-                if (!welcomeChannelId.equals(dataManager.getWelcomeChannelId(guildId))) {
+            }
+
+            String currentWelcomeChannelId = dataManager.getWelcomeChannelId(guildId);
+            if (welcomeChannelId != null && !welcomeChannelId.equals(currentWelcomeChannelId)) {
+                if ("none".equals(welcomeChannelId)) {
+                    if (currentWelcomeChannelId != null) {
+                        dataManager.setWelcomeChannel(guildId, null);
+                        dataManager.setWelcomeActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
                     dataManager.setWelcomeChannel(guildId, welcomeChannelId);
                     dataManager.setWelcomeActive(guildId, true);
                     generalChanges = true;
                 }
             }
 
-            // Leave Channel Handling
-            if ("none".equals(leaveChannelId)) {
-                if (dataManager.isLeaveActive(guildId)) {
-                    dataManager.setLeaveActive(guildId, false);
-                    dataManager.setLeaveChannel(guildId, null);
-                    generalChanges = true;
-                }
-            } else {
-                if (!leaveChannelId.equals(dataManager.getLeaveChannelId(guildId))) {
+            String currentLeaveChannelId = dataManager.getLeaveChannelId(guildId);
+            if (leaveChannelId != null && !leaveChannelId.equals(currentLeaveChannelId)) {
+                if ("none".equals(leaveChannelId)) {
+                    if (currentLeaveChannelId != null) {
+                        dataManager.setLeaveChannel(guildId, null);
+                        dataManager.setLeaveActive(guildId, false);
+                        generalChanges = true;
+                    }
+                } else {
                     dataManager.setLeaveChannel(guildId, leaveChannelId);
                     dataManager.setLeaveActive(guildId, true);
                     generalChanges = true;
                 }
             }
 
-            // Ticket Channel Handling
-            if (ticketChannelId != null && "none".equals(ticketChannelId)) {
-                String currentTicketChannelId = dataManager.getTicketChannel(guildId);
-                if (currentTicketChannelId != null) {
-                    TextChannel channel = jda.getGuildById(guildId).getTextChannelById(currentTicketChannelId);
-                    if (channel != null) {
-                        dataManager.deleteOldTicketEmbed(guildId, channel);
+            String currentTicketChannelId = dataManager.getTicketChannel(guildId);
+            if (ticketChannelId != null && !ticketChannelId.equals(currentTicketChannelId)) {
+                if ("none".equals(ticketChannelId)) {
+                    if (currentTicketChannelId != null) {
+                        TextChannel channel = jda.getGuildById(guildId).getTextChannelById(currentTicketChannelId);
+                        if (channel != null) {
+                            dataManager.deleteOldTicketEmbed(guildId, channel);
+                        }
+                        dataManager.setTicketChannel(guildId, null);
+                        dataManager.setTicketsActive(guildId, false);
+                        ticketChanges = true;
                     }
+                } else {
+                    dataManager.setTicketChannel(guildId, ticketChannelId);
+                    dataManager.setTicketsActive(guildId, true);
+                    ticketChanges = true;
                 }
-                dataManager.setTicketChannel(guildId, null);
-                dataManager.setTicketsActive(guildId, false);
-            } else if (ticketChannelId != null) {
-                dataManager.setTicketChannel(guildId, ticketChannelId);
-                dataManager.setTicketsActive(guildId, true);
-                ticketChanges = true;
             }
 
-            // Message Log Channel Handling
-            if ("none".equals(messageLogChannelId)) {
-                dataManager.deactivateMessageLog(guildId);
-                generalChanges = true;
-            } else {
-                if (!messageLogChannelId.equals(dataManager.getMessageLogChannel(guildId))) {
+            String currentMessageLogChannelId = dataManager.getMessageLogChannel(guildId);
+            if (messageLogChannelId != null && !messageLogChannelId.equals(currentMessageLogChannelId)) {
+                if ("none".equals(messageLogChannelId)) {
+                    if (currentMessageLogChannelId != null) {
+                        dataManager.deactivateMessageLog(guildId);
+                        generalChanges = true;
+                    }
+                } else {
                     dataManager.setMessageLogChannel(guildId, messageLogChannelId);
                     generalChanges = true;
                 }
             }
 
-            // Ticket Category Handling
-            if (ticketCategoryId != null && !"none".equals(ticketCategoryId)) {
+            if (ticketCategoryId != null && !ticketCategoryId.equals(dataManager.getTicketCategory(guildId)) && !"none".equals(ticketCategoryId)) {
                 dataManager.setTicketCategory(guildId, ticketCategoryId);
                 generalChanges = true;
             }
 
-            // Closed Ticket Category Handling
-            if (closedTicketCategoryId != null && !"none".equals(closedTicketCategoryId)) {
+            if (closedTicketCategoryId != null && !closedTicketCategoryId.equals(dataManager.getClosedTicketCategory(guildId)) && !"none".equals(closedTicketCategoryId)) {
                 dataManager.setClosedTicketCategory(guildId, closedTicketCategoryId);
                 generalChanges = true;
             }
 
-            // Mod Role Handling
-            if ("none".equals(modRoleId)) {
-                if (dataManager.getModRole(guildId) != null) {
-                    dataManager.setModRole(guildId, null);
-                    generalChanges = true;
-                }
-            } else {
-                if (!modRoleId.equals(dataManager.getModRole(guildId))) {
+            String currentModRoleId = dataManager.getModRole(guildId);
+            if (modRoleId != null && !modRoleId.equals(currentModRoleId)) {
+                if ("none".equals(modRoleId)) {
+                    if (currentModRoleId != null) {
+                        dataManager.setModRole(guildId, null);
+                        generalChanges = true;
+                    }
+                } else {
                     dataManager.setModRole(guildId, modRoleId);
                     generalChanges = true;
                 }
             }
 
-            // Ticket Options Handling
             boolean supportOption = req.getParameter("ticketOptionSupport") != null;
             boolean reportOption = req.getParameter("ticketOptionReport") != null;
             boolean applicationOption = req.getParameter("ticketOptionApplication") != null;
 
-            if (supportOption != dataManager.getTicketOptions(guildId).get("support") ||
-                    reportOption != dataManager.getTicketOptions(guildId).get("report") ||
-                    applicationOption != dataManager.getTicketOptions(guildId).get("application")) {
+            Map<String, Boolean> currentTicketOptions = dataManager.getTicketOptions(guildId);
+            if (supportOption != currentTicketOptions.get("support") ||
+                    reportOption != currentTicketOptions.get("report") ||
+                    applicationOption != currentTicketOptions.get("application")) {
                 dataManager.setTicketOption(guildId, "support", supportOption);
                 dataManager.setTicketOption(guildId, "report", reportOption);
                 dataManager.setTicketOption(guildId, "application", applicationOption);
                 ticketChanges = true;
             }
 
+            boolean userLogOption = req.getParameter("userLogActive") != null;
+            boolean voiceChannelLogOption = req.getParameter("voiceChannelLogActive") != null;
+            boolean channelLogOption = req.getParameter("channelLogActive") != null;
+            boolean modLogOption = req.getParameter("modLogActive") != null;
+            boolean roleLogOption = req.getParameter("roleLogActive") != null;
+            boolean serverLogOption = req.getParameter("serverLogActive") != null;
+            boolean messageLogOption = req.getParameter("messageLogActive") != null;
+
+            if (userLogOption != dataManager.isUserLogActive(guildId)) {
+                dataManager.setUserLogActive(guildId, userLogOption);
+                generalChanges = true;
+            }
+            if (voiceChannelLogOption != dataManager.isVoiceChannelLogActive(guildId)) {
+                dataManager.setVoiceChannelLogActive(guildId, voiceChannelLogOption);
+                generalChanges = true;
+            }
+            if (channelLogOption != dataManager.isChannelLogActive(guildId)) {
+                dataManager.setChannelLogActive(guildId, channelLogOption);
+                generalChanges = true;
+            }
+            if (modLogOption != dataManager.isModLogActive(guildId)) {
+                dataManager.setModLogActive(guildId, modLogOption);
+                generalChanges = true;
+            }
+            if (roleLogOption != dataManager.isRoleLogActive(guildId)) {
+                dataManager.setRoleLogActive(guildId, roleLogOption);
+                generalChanges = true;
+            }
+            if (serverLogOption != dataManager.isServerLogActive(guildId)) {
+                dataManager.setServerLogActive(guildId, serverLogOption);
+                generalChanges = true;
+            }
+            if (messageLogOption != dataManager.isMessageLogActive(guildId)) {
+                dataManager.setMessageLogActive(guildId, messageLogOption);
+                generalChanges = true;
+            }
+
             if (ticketChanges) {
                 Guild guild = jda.getGuildById(guildId);
                 if (guild != null) {
-                    String currentTicketChannelId = dataManager.getTicketChannel(guildId);
-                    if (currentTicketChannelId != null) {
-                        TextChannel channel = guild.getTextChannelById(currentTicketChannelId);
+                    String updatedTicketChannelId = dataManager.getTicketChannel(guildId);
+                    if (updatedTicketChannelId != null) {
+                        TextChannel channel = guild.getTextChannelById(updatedTicketChannelId);
                         if (channel != null) {
                             TicketEmbedCommand ticketEmbedCommand = new TicketEmbedCommand(dataManager);
                             ticketEmbedCommand.sendNewTicketEmbed(channel, guildId, true);
@@ -364,14 +472,13 @@ public class Website {
                     }
                 }
             }
-
             if (generalChanges || ticketChanges) {
                 dataManager.notifyListeners(guildId);
             }
-
             resp.sendRedirect("/settings?sk=" + sessionKey);
         }
     }
+
 
     public static class VerifyServlet extends HttpServlet {
         @Override

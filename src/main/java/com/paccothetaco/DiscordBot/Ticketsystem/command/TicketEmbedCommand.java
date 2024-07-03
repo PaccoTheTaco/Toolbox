@@ -37,7 +37,6 @@ public class TicketEmbedCommand {
         }
     }
 
-    // Neue Methode mit 3 Argumenten
     public void sendNewTicketEmbed(TextChannel channel, String guildId, boolean isUpdate) {
         Map<String, Boolean> ticketOptions = dataManager.getTicketOptions(guildId);
 
@@ -60,12 +59,10 @@ public class TicketEmbedCommand {
 
         MessageEmbed embed = embedBuilder.build();
 
-        // Löschen des alten Embeds, wenn ein Update stattfindet
         if (isUpdate) {
             dataManager.deleteOldTicketEmbed(guildId, channel);
         }
 
-        // Neues Embed senden und die Nachricht ID speichern
         channel.sendMessageEmbeds(embed).setActionRow(SelectMenuUtil.ticketSelect(options)).queue(message -> {
             dataManager.setTicketEmbedMessageId(guildId, message.getId());
         });

@@ -9,6 +9,10 @@ import org.jetbrains.annotations.NotNull;
 import net.dv8tion.jda.api.EmbedBuilder;
 
 import java.awt.*;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 public class WelcomeAndLeave extends ListenerAdapter implements DataManager.DataChangeListener {
@@ -29,6 +33,21 @@ public class WelcomeAndLeave extends ListenerAdapter implements DataManager.Data
         this.channelDataManager.addListener(this);
     }
 
+    private String getDuration(OffsetDateTime startDate) {
+        LocalDate startLocalDate = startDate.toLocalDate();
+        LocalDate now = LocalDate.now();
+        Period period = Period.between(startLocalDate, now);
+        if (period.getYears() == 0 && period.getMonths() == 0 && period.getDays() == 0) {
+            return "today";
+        }
+        return String.format("%d Years, %d Months, %d Days", period.getYears(), period.getMonths(), period.getDays());
+    }
+
+    private String formatDate(OffsetDateTime date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+        return date.format(formatter);
+    }
+
     @Override
     public void onGuildMemberJoin(@NotNull GuildMemberJoinEvent event) {
         if (!channelDataManager.isWelcomeActive(event.getGuild().getId())) {
@@ -43,9 +62,13 @@ public class WelcomeAndLeave extends ListenerAdapter implements DataManager.Data
                 String welcomeMessage = String.format(welcomeMessages[rand.nextInt(welcomeMessages.length)], event.getMember().getAsMention(), event.getGuild().getName());
                 int memberCount = event.getGuild().getMemberCount();
 
+                OffsetDateTime accountCreationDate = event.getUser().getTimeCreated();
+                String accountAge = getDuration(accountCreationDate);
+                String formattedCreationDate = formatDate(accountCreationDate);
+
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.CYAN);
-                embed.setDescription(welcomeMessage + "\n\nYou are the " + memberCount + "th member on this server.");
+                embed.setDescription(welcomeMessage + "\n\nYou are the " + memberCount + "th member on this server.\nCreated: " + formattedCreationDate + " (" + accountAge + ")");
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("Welcome to the community!", event.getGuild().getIconUrl());
 
@@ -76,9 +99,13 @@ public class WelcomeAndLeave extends ListenerAdapter implements DataManager.Data
                 int memberCount = event.getGuild().getMemberCount();
                 String leaveMessage = String.format("Goodbye, %s. We hope to see you again!\nNow we are down to %d members.", event.getUser().getAsTag(), memberCount);
 
+                OffsetDateTime joinDate = event.getMember().getTimeJoined();
+                String joinDuration = getDuration(joinDate);
+                String formattedJoinDate = formatDate(joinDate);
+
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.setColor(Color.RED);
-                embed.setDescription(leaveMessage);
+                embed.setDescription(leaveMessage + "\nJoined: " + formattedJoinDate + " (" + joinDuration + ")");
                 embed.setThumbnail(event.getUser().getEffectiveAvatarUrl());
                 embed.setFooter("We hope to see you back!", event.getGuild().getIconUrl());
 

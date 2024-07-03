@@ -1,15 +1,15 @@
 package com.paccothetaco.DiscordBot;
 
-import com.paccothetaco.DiscordBot.Utils.CommandUtil;
-import com.paccothetaco.DiscordBot.Utils.SecretUtil;
-import com.paccothetaco.DiscordBot.Logsystem.LogListener;
-import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
+import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
+import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
+import com.paccothetaco.DiscordBot.Utils.CommandUtil;
+import com.paccothetaco.DiscordBot.Utils.SecretUtil;
 import com.paccothetaco.DiscordBot.Website.Website;
+import com.paccothetaco.DiscordBot.WelcomeAndLeaveMessages.WelcomeAndLeave;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 
 import java.util.Timer;
@@ -43,8 +44,16 @@ public class Main {
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
-                    .enableIntents(GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_VOICE_STATES, GatewayIntent.GUILD_MEMBERS)
-                    .disableCache(CacheFlag.VOICE_STATE, CacheFlag.EMOJI, CacheFlag.STICKER)
+                    .enableIntents(
+                            GatewayIntent.MESSAGE_CONTENT,
+                            GatewayIntent.GUILD_VOICE_STATES,
+                            GatewayIntent.GUILD_MEMBERS,
+                            GatewayIntent.GUILD_VOICE_STATES,
+                            GatewayIntent.GUILD_MESSAGES,
+                            GatewayIntent.GUILD_EMOJIS_AND_STICKERS)
+                    .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .setMemberCachePolicy(MemberCachePolicy.all(MemberCachePolicy.ALL))
+                    .enableCache(CacheFlag.MEMBER_OVERRIDES)
                     .setActivity(Activity.watching("Pacco_the_Taco's Discord"))
                     .addEventListeners(
                             new ListenerAdapter() {
@@ -57,7 +66,15 @@ public class Main {
                             new WelcomeAndLeave(dataManager),
                             new ButtonInteractListener(dataManager),
                             new SelectMenuInteractListener(dataManager),
-                            new LogListener(dataManager)
+                            new UserLogListener(dataManager),
+                            new MessageLogListener(dataManager),
+                            new VoiceLogListener(dataManager),
+                            new ChannelListener(dataManager),
+                            new ModLogListener(dataManager),
+                            new RoleLogListener(dataManager),
+                            new ServerLogListener(dataManager),
+                            new Giveaways(),
+                            new com.paccothetaco.DiscordBot.GiveawayReactionListener()
                     )
                     .build()
                     .awaitReady();
@@ -74,7 +91,22 @@ public class Main {
                             .addOptions(
                                     new OptionData(OptionType.INTEGER, "row", "The row to place your mark", true),
                                     new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true)),
-                    Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game")
+                    Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game"),
+                    Commands.slash("toolboxgpt", "Ask ToolboxGPT a question")
+                            .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true)),
+                    Commands.slash("setbirthday", "Set your birthday")
+                            .addOptions(
+                                    new OptionData(OptionType.INTEGER, "day", "The day of your birthday", true),
+                                    new OptionData(OptionType.INTEGER, "month", "The month of your birthday", true)),
+                    Commands.slash("deletebirthday", "Delete your birthday"),
+                    Commands.slash("testbirthday", "Test the birthday reminder"),
+                    Commands.slash("startgiveaway", "Start a new giveaway")
+                            .addOptions(
+                                    new OptionData(OptionType.STRING, "title", "The title of the giveaway", true),
+                                    new OptionData(OptionType.STRING, "price", "The price of the giveaway", true),
+                                    new OptionData(OptionType.STRING, "howlong", "How long the giveaway runs (in seconds)", true),
+                                    new OptionData(OptionType.STRING, "howtoreact", "Emoji to react with to join the giveaway", true)
+                            )
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

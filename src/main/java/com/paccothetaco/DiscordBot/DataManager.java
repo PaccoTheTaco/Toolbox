@@ -20,7 +20,7 @@ public class DataManager {
     public void checkAndAddServerIDs(JDA jda) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false, false, false, false, false, false, false, false)";
 
             for (Guild guild : jda.getGuilds()) {
                 String serverID = guild.getId();
@@ -47,7 +47,7 @@ public class DataManager {
     public void addServerOnJoin(Guild guild) {
         try (Connection connection = DatabaseManager.getConnection()) {
             String selectQuery = "SELECT COUNT(*) FROM server_data WHERE Server_ID = ?";
-            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false)";
+            String insertQuery = "INSERT INTO server_data (Server_ID, welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active) VALUES (?, NULL, NULL, false, false, NULL, NULL, NULL, NULL, true, true, true, NULL, NULL, false, false, false, false, false, false, false, false)";
 
             String serverID = guild.getId();
 
@@ -163,8 +163,32 @@ public class DataManager {
         return getServerData(guildId).getVoiceLogChannelId();
     }
 
+    public void setRoleLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "RoleLog_active", isActive);
+    }
+
+    public boolean isRoleLogActive(String guildId) {
+        return getServerData(guildId).isRoleLogActive();
+    }
+
+    public void setServerLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "server_log_active", isActive);
+    }
+
+    public boolean isServerLogActive(String guildId) {
+        return getServerData(guildId).isServerLogActive();
+    }
+
     public void setTicketOption(String guildId, String option, boolean active) {
         updateServerData(guildId, option + "_ticket_active", active);
+    }
+
+    public void setModLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "ModLog_active", isActive);
+    }
+
+    public boolean isModLogActive(String guildId) {
+        return getServerData(guildId).isModLogActive();
     }
 
     public Map<String, Boolean> getTicketOptions(String guildId) {
@@ -176,6 +200,22 @@ public class DataManager {
         ticketOptions.put("report", serverData.isReportTicketActive());
 
         return ticketOptions;
+    }
+
+    public boolean isBirthdayActive(String guildId) {
+        return getServerData(guildId).isBirthdayActive();
+    }
+
+    public void setBirthdayActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "birthday_active", isActive);
+    }
+
+    public String getBirthdayChannelId(String guildId) {
+        return getServerData(guildId).getBirthdayChannelId();
+    }
+
+    public void setBirthdayChannelId(String guildId, String channelId) {
+        updateServerData(guildId, "birthday_channel_ID", channelId);
     }
 
     public void setTicketChannel(String guildId, String channelId) {
@@ -233,52 +273,51 @@ public class DataManager {
 
     private ServerData getServerData(String guildId) {
         ServerData serverData = new ServerData();
-        Connection connection = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            connection = DatabaseManager.getConnection();
+        try (Connection connection = DatabaseManager.getConnection()) {
             String query = "SELECT welcome_channel_ID, leave_channel_ID, welcome_active, leave_active, " +
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
-                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID " +
+                    "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
+                    "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
+                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active, birthday_active, birthday_channel_ID " +
                     "FROM server_data WHERE Server_ID = ?";
-            stmt = connection.prepareStatement(query);
-            stmt.setString(1, guildId);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                serverData.setWelcomeChannelId(rs.getString("welcome_channel_ID"));
-                serverData.setLeaveChannelId(rs.getString("leave_channel_ID"));
-                serverData.setWelcomeActive(rs.getBoolean("welcome_active"));
-                serverData.setLeaveActive(rs.getBoolean("leave_active"));
-                serverData.setTicketCategoryId(rs.getString("ticket_category_ID"));
-                serverData.setClosedTicketCategoryId(rs.getString("closed_ticket_category_ID"));
-                serverData.setModRoleId(rs.getString("mod_role_ID"));
-                serverData.setMessageLogChannelId(rs.getString("message_log_channel_ID"));
-                serverData.setSupportTicketActive(rs.getBoolean("support_ticket_active"));
-                serverData.setApplicationTicketActive(rs.getBoolean("application_ticket_active"));
-                serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
-                serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
-                serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
-                serverData.setTicketsActive(rs.getBoolean("tickets_active"));
-                serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
-                serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
-            } else {
-                System.err.println("No data found for guild ID: " + guildId);
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, guildId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        serverData.setWelcomeChannelId(rs.getString("welcome_channel_ID"));
+                        serverData.setLeaveChannelId(rs.getString("leave_channel_ID"));
+                        serverData.setWelcomeActive(rs.getBoolean("welcome_active"));
+                        serverData.setLeaveActive(rs.getBoolean("leave_active"));
+                        serverData.setTicketCategoryId(rs.getString("ticket_category_ID"));
+                        serverData.setClosedTicketCategoryId(rs.getString("closed_ticket_category_ID"));
+                        serverData.setModRoleId(rs.getString("mod_role_ID"));
+                        serverData.setMessageLogChannelId(rs.getString("message_log_channel_ID"));
+                        serverData.setSupportTicketActive(rs.getBoolean("support_ticket_active"));
+                        serverData.setApplicationTicketActive(rs.getBoolean("application_ticket_active"));
+                        serverData.setReportTicketActive(rs.getBoolean("report_ticket_active"));
+                        serverData.setTicketEmbedMessageId(rs.getString("ticketembed_message_id"));
+                        serverData.setTicketChannelId(rs.getString("ticket_channel_ID"));
+                        serverData.setTicketsActive(rs.getBoolean("tickets_active"));
+                        serverData.setTicTacToeActive(rs.getBoolean("TicTacToe_is_active"));
+                        serverData.setTicTacToePlayers(rs.getString("TicTacToe_Player1_ID"), rs.getString("TicTacToe_Player2_ID"));
+                        serverData.setUserLogActive(rs.getBoolean("userlog_active"));
+                        serverData.setVoiceChannelLogActive(rs.getBoolean("voice_channel_log_active"));
+                        serverData.setChannelLogActive(rs.getBoolean("Channel_Log_active"));
+                        serverData.setModLogActive(rs.getBoolean("ModLog_active"));
+                        serverData.setRoleLogActive(rs.getBoolean("RoleLog_active"));
+                        serverData.setServerLogActive(rs.getBoolean("server_log_active"));
+                        serverData.setMessageLogActive(rs.getBoolean("message_log_active"));
+                        serverData.setBirthdayActive(rs.getBoolean("birthday_active"));
+                        serverData.setBirthdayChannelId(rs.getString("birthday_channel_ID"));
+                    } else {
+                        System.err.println("No data found for guild ID: " + guildId);
+                    }
+                }
             }
         } catch (SQLException e) {
+            System.err.println("SQL error while retrieving server data for guild ID: " + guildId);
             e.printStackTrace();
-        } finally {
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-                if (connection != null) connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
-
         return serverData;
     }
 
@@ -339,6 +378,38 @@ public class DataManager {
         return new String[]{null, null};
     }
 
+    public void setVoiceChannelLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "voice_channel_log_active", isActive);
+    }
+
+    public boolean isVoiceChannelLogActive(String guildId) {
+        return getServerData(guildId).isVoiceChannelLogActive();
+    }
+
+    public void setChannelLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "Channel_Log_active", isActive);
+    }
+
+    public boolean isChannelLogActive(String guildId) {
+        return getServerData(guildId).isChannelLogActive();
+    }
+
+    public void setUserLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "userlog_active", isActive);
+    }
+
+    public boolean isUserLogActive(String guildId) {
+        return getServerData(guildId).isUserLogActive();
+    }
+
+    public void setMessageLogActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "message_log_active", isActive);
+    }
+
+    public boolean isMessageLogActive(String guildId) {
+        return getServerData(guildId).isMessageLogActive();
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -358,9 +429,60 @@ public class DataManager {
         private boolean ticTacToeActive;
         private String player1Id;
         private String player2Id;
+        private boolean userLogActive;
+        private boolean voiceChannelLogActive;
+        private boolean channelLogActive;
+        private boolean modLogActive;
+        private boolean roleLogActive;
+        private boolean serverLogActive;
+        private boolean messageLogActive;
+        private boolean birthdayActive;
+        private String birthdayChannelId;
 
-        public boolean isTicTacToeActive() {
-            return ticTacToeActive;
+
+        public boolean isUserLogActive() { return userLogActive;}
+        public boolean isVoiceChannelLogActive() {return voiceChannelLogActive;}
+        public boolean isTicTacToeActive() { return ticTacToeActive;}
+        public boolean isChannelLogActive() { return channelLogActive; }
+        public boolean isModLogActive() { return modLogActive; }
+        public boolean isRoleLogActive() { return roleLogActive; }
+        public boolean isServerLogActive() { return serverLogActive; }
+        public boolean isMessageLogActive() { return messageLogActive; }
+        public boolean isBirthdayActive() { return birthdayActive; }
+
+        public void setBirthdayActive(boolean birthdayActive) {
+            this.birthdayActive = birthdayActive;
+        }
+
+        public String getBirthdayChannelId() {
+            return birthdayChannelId;
+        }
+
+        public void setBirthdayChannelId(String birthdayChannelId) {
+            this.birthdayChannelId = birthdayChannelId;
+        }
+
+        public void setServerLogActive(boolean serverLogActive) {
+            this.serverLogActive = serverLogActive;
+        }
+
+        public void setRoleLogActive(boolean roleLogActive) {
+            this.roleLogActive = roleLogActive;
+        }
+        public void setUserLogActive(boolean userLogActive) { this.userLogActive = userLogActive;}
+
+        public void setModLogActive(boolean modLogActive) { this.modLogActive = modLogActive; }
+
+        public void setChannelLogActive(boolean channelLogActive) {
+            this.channelLogActive = channelLogActive;
+        }
+
+        public void setVoiceChannelLogActive(boolean voiceChannelLogActive) {
+            this.voiceChannelLogActive = voiceChannelLogActive;
+        }
+
+        public void setMessageLogActive(boolean messageLogActive) {
+            this.messageLogActive = messageLogActive;
         }
 
         public void setTicTacToeActive(boolean ticTacToeActive) {
