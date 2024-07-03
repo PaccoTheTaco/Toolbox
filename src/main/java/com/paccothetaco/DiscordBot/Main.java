@@ -1,6 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
-import com.paccothetaco.DiscordBot.Birthday.BirthdayCommand;
+import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
@@ -72,7 +72,9 @@ public class Main {
                             new ChannelListener(dataManager),
                             new ModLogListener(dataManager),
                             new RoleLogListener(dataManager),
-                            new ServerLogListener(dataManager)
+                            new ServerLogListener(dataManager),
+                            new Giveaways(),
+                            new com.paccothetaco.DiscordBot.GiveawayReactionListener()
                     )
                     .build()
                     .awaitReady();
@@ -97,7 +99,14 @@ public class Main {
                                     new OptionData(OptionType.INTEGER, "day", "The day of your birthday", true),
                                     new OptionData(OptionType.INTEGER, "month", "The month of your birthday", true)),
                     Commands.slash("deletebirthday", "Delete your birthday"),
-                    Commands.slash("testbirthday", "Test the birthday reminder")
+                    Commands.slash("testbirthday", "Test the birthday reminder"),
+                    Commands.slash("startgiveaway", "Start a new giveaway")
+                            .addOptions(
+                                    new OptionData(OptionType.STRING, "title", "The title of the giveaway", true),
+                                    new OptionData(OptionType.STRING, "price", "The price of the giveaway", true),
+                                    new OptionData(OptionType.STRING, "howlong", "How long the giveaway runs (in seconds)", true),
+                                    new OptionData(OptionType.STRING, "howtoreact", "Emoji to react with to join the giveaway", true)
+                            )
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

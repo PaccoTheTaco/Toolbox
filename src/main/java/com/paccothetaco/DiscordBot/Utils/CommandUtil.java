@@ -3,6 +3,7 @@ package com.paccothetaco.DiscordBot.Utils;
 import com.paccothetaco.DiscordBot.Birthday.BirthdayCommand;
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Games.TicTacToe;
+import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.ToolboxGPT;
 import com.paccothetaco.DiscordBot.Website.Website;
 import net.dv8tion.jda.api.entities.Member;
@@ -39,6 +40,7 @@ public class CommandUtil extends ListenerAdapter {
             case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
             case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
             case "testbirthday" -> handleTestBirthday(event);
+            case "startgiveaway" -> handleGiveaway(event);
         }
     }
 
@@ -272,5 +274,10 @@ public class CommandUtil extends ListenerAdapter {
         }
 
         BirthdayCommand.handleTestBirthday(event, dataManager);
+    }
+
+    private void handleGiveaway(SlashCommandInteractionEvent event) {
+        Giveaways giveaways = new Giveaways();
+        giveaways.onSlashCommandInteraction(event);
     }
 }
