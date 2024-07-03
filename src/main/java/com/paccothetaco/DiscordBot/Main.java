@@ -41,7 +41,6 @@ public class Main {
     public static void startBot() {
         DataManager dataManager = new DataManager();
         CommandUtil commandUtil = new CommandUtil(dataManager);
-        BirthdayCommand.scheduleBirthdayCheck(jda, dataManager);
 
         try {
             jda = JDABuilder.createDefault(SecretUtil.getToken())
@@ -94,9 +93,11 @@ public class Main {
                     Commands.slash("toolboxgpt", "Ask ToolboxGPT a question")
                             .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true)),
                     Commands.slash("setbirthday", "Set your birthday")
-                            .addOptions(new OptionData(OptionType.STRING, "birthday", "Your birthday in format YYYY-MM-DD", true)),
+                            .addOptions(
+                                    new OptionData(OptionType.INTEGER, "day", "The day of your birthday", true),
+                                    new OptionData(OptionType.INTEGER, "month", "The month of your birthday", true)),
                     Commands.slash("deletebirthday", "Delete your birthday"),
-                    Commands.slash("testbirthday", "Test birthday notifications")
+                    Commands.slash("testbirthday", "Test the birthday reminder")
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

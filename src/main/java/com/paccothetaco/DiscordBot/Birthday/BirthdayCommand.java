@@ -27,7 +27,10 @@ public class BirthdayCommand {
     public static void handleSetBirthday(SlashCommandInteractionEvent event, DataManager dataManager) {
         String guildId = event.getGuild().getId();
         String userId = event.getUser().getId();
-        LocalDate birthday = LocalDate.parse(event.getOption("birthday").getAsString());
+        int day = event.getOption("day").getAsInt();
+        int month = event.getOption("month").getAsInt();
+        int currentYear = LocalDate.now(MEZ).getYear();
+        LocalDate birthday = LocalDate.of(currentYear, month, day); // Verwenden Sie das aktuelle Jahr
 
         if (!dataManager.isBirthdayActive(guildId)) {
             event.reply("Birthday reminders are not activated on the server").setEphemeral(true).queue();
@@ -41,7 +44,7 @@ public class BirthdayCommand {
                 stmt.setString(2, guildId);
                 stmt.setDate(3, java.sql.Date.valueOf(birthday));
                 stmt.executeUpdate();
-                event.reply("Your birthday has been set to " + birthday).setEphemeral(true).queue();
+                event.reply("Your birthday has been set to " + day + "/" + month).setEphemeral(true).queue();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -99,10 +102,6 @@ public class BirthdayCommand {
 
     public static synchronized void checkBirthdays(JDA jda, DataManager dataManager) {
         LocalDate today = LocalDate.now(MEZ);
-        if (lastCheckedDate.equals(today)) {
-            return;
-        }
-
         System.out.println("Checking birthdays for " + today);
 
         try (Connection connection = DatabaseManager.getConnection()) {
@@ -114,28 +113,30 @@ public class BirthdayCommand {
                     while (rs.next()) {
                         String userId = rs.getString("user_id");
                         String serverId = rs.getString("server_id");
-
-                        if (dataManager.isBirthdayActive(serverId)) {
-                            String channelId = dataManager.getBirthdayChannelId(serverId);
-                            TextChannel channel = jda.getTextChannelById(channelId);
-                            User user = jda.getUserById(userId);
-
-                            if (channel != null && user != null) {
-                                sendBirthdayMessage(channel, user);
-                            } else {
-                                System.out.println("Channel or user not found for userId: " + userId + ", serverId: " + serverId);
-                            }
-                        } else {
-                            System.out.println("Birthday reminders are not active for serverId: " + serverId);
-                        }
+                        System.out.println("Found birthday for userId: " + userId + ", serverId: " + serverId);
+                        processBirthday(jda, dataManager, userId, serverId);
                     }
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
 
-        lastCheckedDate = today;
+    private static void processBirthday(JDA jda, DataManager dataManager, String userId, String serverId) {
+        if (dataManager.isBirthdayActive(serverId)) {
+            String channelId = dataManager.getBirthdayChannelId(serverId);
+            TextChannel channel = jda.getTextChannelById(channelId);
+            User user = jda.retrieveUserById(userId).complete();
+
+            if (channel != null && user != null) {
+                sendBirthdayMessage(channel, user);
+            } else {
+                System.out.println("Channel or user not found. Channel: " + (channel != null) + ", User: " + (user != null));
+            }
+        } else {
+            System.out.println("Birthday reminders are not active for serverId: " + serverId);
+        }
     }
 
     private static void sendBirthdayMessage(TextChannel channel, User user) {
@@ -150,9 +151,8 @@ public class BirthdayCommand {
     }
 
     public static void handleTestBirthday(SlashCommandInteractionEvent event, DataManager dataManager) {
-        event.deferReply().setEphemeral(true).queue(hook -> {
-            checkBirthdays(event.getJDA(), dataManager);
-            hook.sendMessage("Birthday check executed.").setEphemeral(true).queue();
-        });
+        event.deferReply().setEphemeral(true).queue();
+        checkBirthdays(event.getJDA(), dataManager);
+        event.getHook().sendMessage("Birthday check executed.").setEphemeral(true).queue();
     }
 }

@@ -18,7 +18,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class CommandUtil extends ListenerAdapter {
-    private DataManager dataManager;
+    private final DataManager dataManager;
     private TicTacToe ticTacToe;
     private Timer inactivityTimer;
 
@@ -38,17 +38,8 @@ public class CommandUtil extends ListenerAdapter {
             case "toolboxgpt" -> handleToolboxGPT(event);
             case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
             case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
-            case "testbirthday" -> handeTestBirthday(event);
+            case "testbirthday" -> handleTestBirthday(event);
         }
-    }
-
-    public void handeTestBirthday (SlashCommandInteractionEvent event) {
-        if (event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
-            BirthdayCommand.handleTestBirthday(event, dataManager);
-        } else {
-            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
-        }
-        BirthdayCommand.handleTestBirthday(event, dataManager);
     }
 
     @Override
@@ -121,7 +112,6 @@ public class CommandUtil extends ListenerAdapter {
         System.out.println("Player 1: " + player1Name + " (ID: " + player1Id + ")");
     }
 
-
     private void handleJoinTicTacToe(ButtonInteractionEvent event) {
         String serverId = event.getGuild().getId();
         String player2Id = event.getUser().getId();
@@ -155,7 +145,6 @@ public class CommandUtil extends ListenerAdapter {
 
         System.out.println("Player 2: " + player2Name + " (ID: " + player2Id + ")");
     }
-
 
     private void handleMove(SlashCommandInteractionEvent event) {
         String serverId = event.getGuild().getId();
@@ -274,5 +263,14 @@ public class CommandUtil extends ListenerAdapter {
         }
 
         return sessionKey.toString();
+    }
+
+    private void handleTestBirthday(SlashCommandInteractionEvent event) {
+        if (!event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
+            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
+            return;
+        }
+
+        BirthdayCommand.handleTestBirthday(event, dataManager);
     }
 }
