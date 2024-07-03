@@ -202,6 +202,22 @@ public class DataManager {
         return ticketOptions;
     }
 
+    public boolean isBirthdayActive(String guildId) {
+        return getServerData(guildId).isBirthdayActive();
+    }
+
+    public void setBirthdayActive(String guildId, boolean isActive) {
+        updateServerData(guildId, "birthday_active", isActive);
+    }
+
+    public String getBirthdayChannelId(String guildId) {
+        return getServerData(guildId).getBirthdayChannelId();
+    }
+
+    public void setBirthdayChannelId(String guildId, String channelId) {
+        updateServerData(guildId, "birthday_channel_ID", channelId);
+    }
+
     public void setTicketChannel(String guildId, String channelId) {
         updateServerData(guildId, "ticket_channel_ID", channelId);
     }
@@ -262,7 +278,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active " +
+                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active, birthday_active, birthday_channel_ID " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -291,6 +307,8 @@ public class DataManager {
                         serverData.setRoleLogActive(rs.getBoolean("RoleLog_active"));
                         serverData.setServerLogActive(rs.getBoolean("server_log_active"));
                         serverData.setMessageLogActive(rs.getBoolean("message_log_active"));
+                        serverData.setBirthdayActive(rs.getBoolean("birthday_active"));
+                        serverData.setBirthdayChannelId(rs.getString("birthday_channel_ID"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -418,6 +436,9 @@ public class DataManager {
         private boolean roleLogActive;
         private boolean serverLogActive;
         private boolean messageLogActive;
+        private boolean birthdayActive;
+        private String birthdayChannelId;
+
 
         public boolean isUserLogActive() { return userLogActive;}
         public boolean isVoiceChannelLogActive() {return voiceChannelLogActive;}
@@ -427,6 +448,19 @@ public class DataManager {
         public boolean isRoleLogActive() { return roleLogActive; }
         public boolean isServerLogActive() { return serverLogActive; }
         public boolean isMessageLogActive() { return messageLogActive; }
+        public boolean isBirthdayActive() { return birthdayActive; }
+
+        public void setBirthdayActive(boolean birthdayActive) {
+            this.birthdayActive = birthdayActive;
+        }
+
+        public String getBirthdayChannelId() {
+            return birthdayChannelId;
+        }
+
+        public void setBirthdayChannelId(String birthdayChannelId) {
+            this.birthdayChannelId = birthdayChannelId;
+        }
 
         public void setServerLogActive(boolean serverLogActive) {
             this.serverLogActive = serverLogActive;

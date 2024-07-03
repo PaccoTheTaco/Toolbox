@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot.Utils;
 
+import com.paccothetaco.DiscordBot.Birthday.BirthdayCommand;
 import com.paccothetaco.DiscordBot.DataManager;
 import com.paccothetaco.DiscordBot.Games.TicTacToe;
 import com.paccothetaco.DiscordBot.ToolboxGPT;
@@ -35,7 +36,8 @@ public class CommandUtil extends ListenerAdapter {
             case "move" -> handleMove(event);
             case "stopgame" -> handleStopGame(event);
             case "toolboxgpt" -> handleToolboxGPT(event);
-
+            case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
+            case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
         }
     }
 

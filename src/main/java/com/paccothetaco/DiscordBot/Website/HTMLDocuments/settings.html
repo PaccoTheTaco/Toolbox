@@ -133,6 +133,23 @@
                         </script>
                     </div>
                 </div>
+                <!-- Birthday Channel Selection -->
+                <div class="dropdown-container">
+                    <label>Select Birthday Channel:</label>
+                    <div class="channel-selection" id="birthdayChannelText">
+                        <span id="birthdayChannelSelected"><!-- BIRTHDAY_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('birthdayChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('birthdayChannel')">Deactivate</button>
+                    </div>
+                    <div class="dropdown-menu" id="birthdayChannelMenu">
+                        <select name="birthdayChannel" id="birthdayChannel" onchange="updateSelection('birthdayChannel')">
+                            <!-- CHANNEL_OPTIONS_BIRTHDAY -->
+                        </select>
+                        <script>
+                            document.getElementById('birthdayChannel').value = '<!-- CURRENT_BIRTHDAY_CHANNEL_ID -->';
+                        </script>
+                    </div>
+                </div>
                 <!-- Message Log Channel Selection -->
                 <div class="dropdown-container">
                     <label>Select Log Channel:</label>

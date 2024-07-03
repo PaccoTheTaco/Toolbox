@@ -101,6 +101,8 @@ public class Website {
                         boolean roleLogActive = dataManager.isRoleLogActive(guildId);
                         boolean serverLogActive = dataManager.isServerLogActive(guildId);
                         boolean messageLogActive = dataManager.isMessageLogActive(guildId);
+                        String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
+                        String currentBirthdayChannelName = "--deactivated--";
 
                         String channelOptions = "";
                         String categoryOptions = "";
@@ -164,6 +166,13 @@ public class Website {
                             }
                         }
 
+                        if (currentBirthdayChannelId != null) {
+                            TextChannel birthdayChannel = guild.getTextChannelById(currentBirthdayChannelId);
+                            if (birthdayChannel != null) {
+                                currentBirthdayChannelName = birthdayChannel.getName();
+                            }
+                        }
+
                         Map<String, Boolean> ticketOptions = dataManager.getTicketOptions(guildId);
 
                         String htmlTemplate = readFileAsString(System.getProperty("user.dir") + "/src/main/java/com/paccothetaco/DiscordBot/Website/HTMLDocuments/settings.html");
@@ -194,7 +203,9 @@ public class Website {
                                 .replace("<!-- MOD_LOG_ACTIVE -->", modLogActive ? "checked" : "")
                                 .replace("<!-- ROLE_LOG_ACTIVE -->", roleLogActive ? "checked" : "")
                                 .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "")
-                                .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "");
+                                .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "")
+                                .replace("<!-- BIRTHDAY_CHANNEL_NAME -->", currentBirthdayChannelName != null ? currentBirthdayChannelName : "--deactivated--")
+                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);

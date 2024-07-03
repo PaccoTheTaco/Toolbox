@@ -90,7 +90,10 @@ public class Main {
                                     new OptionData(OptionType.INTEGER, "column", "The column to place your mark", true)),
                     Commands.slash("stopgame", "Stop the current Tic-Tac-Toe game"),
                     Commands.slash("toolboxgpt", "Ask ToolboxGPT a question")
-                            .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true))
+                            .addOptions(new OptionData(OptionType.STRING, "question", "The question to ask ToolboxGPT", true)),
+                    Commands.slash("setbirthday", "Set your birthday")
+                            .addOptions(new OptionData(OptionType.STRING, "birthday", "Your birthday in format YYYY-MM-DD", true)),
+                    Commands.slash("deletebirthday", "Delete your birthday")
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)
