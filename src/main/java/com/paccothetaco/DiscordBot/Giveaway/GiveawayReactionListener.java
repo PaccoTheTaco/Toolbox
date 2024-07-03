@@ -1,5 +1,6 @@
-package com.paccothetaco.DiscordBot;
+package com.paccothetaco.DiscordBot.Giveaway;
 
+import com.paccothetaco.DiscordBot.DatabaseManager;
 import net.dv8tion.jda.api.events.message.react.MessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 

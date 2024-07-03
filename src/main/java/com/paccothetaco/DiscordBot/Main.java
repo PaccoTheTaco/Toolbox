@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
+import com.paccothetaco.DiscordBot.Giveaway.GiveawayReactionListener;
 import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
@@ -74,7 +75,7 @@ public class Main {
                             new RoleLogListener(dataManager),
                             new ServerLogListener(dataManager),
                             new Giveaways(),
-                            new com.paccothetaco.DiscordBot.GiveawayReactionListener()
+                            new GiveawayReactionListener()
                     )
                     .build()
                     .awaitReady();
@@ -105,8 +106,8 @@ public class Main {
                                     new OptionData(OptionType.STRING, "title", "The title of the giveaway", true),
                                     new OptionData(OptionType.STRING, "price", "The price of the giveaway", true),
                                     new OptionData(OptionType.STRING, "howlong", "How long the giveaway runs (in seconds)", true),
-                                    new OptionData(OptionType.STRING, "howtoreact", "Emoji to react with to join the giveaway", true)
-                            )
+                                    new OptionData(OptionType.STRING, "howtoreact", "Emoji to react with to join the giveaway", true)),
+                    Commands.slash("endgiveaway", "End the current giveaway")
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

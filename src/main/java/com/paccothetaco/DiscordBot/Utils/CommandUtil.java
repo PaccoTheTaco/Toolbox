@@ -40,7 +40,7 @@ public class CommandUtil extends ListenerAdapter {
             case "setbirthday" -> BirthdayCommand.handleSetBirthday(event, dataManager);
             case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
             case "testbirthday" -> handleTestBirthday(event);
-            case "startgiveaway" -> handleGiveaway(event);
+            case "startgiveaway", "endgiveaway" -> handleGiveaway(event);
         }
     }
 
@@ -277,6 +277,13 @@ public class CommandUtil extends ListenerAdapter {
     }
 
     private void handleGiveaway(SlashCommandInteractionEvent event) {
+        String guildId = event.getGuild().getId();
+        if (event.getName().equals("endgiveaway")) {
+            if (!event.getMember().hasPermission(net.dv8tion.jda.api.Permission.ADMINISTRATOR)) {
+                event.reply("You do not have permission to end the giveaway.").setEphemeral(true).queue();
+                return;
+            }
+        }
         Giveaways giveaways = new Giveaways();
         giveaways.onSlashCommandInteraction(event);
     }
