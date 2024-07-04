@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
@@ -42,16 +43,19 @@ public class Giveaways extends ListenerAdapter {
         String price = event.getOption("price").getAsString();
         String howLong = event.getOption("howlong").getAsString();
         String howToReact = event.getOption("howtoreact").getAsString();
+        long duration = Long.parseLong(howLong);
+
+        Instant endTime = Instant.now().plus(duration, ChronoUnit.SECONDS);
 
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(title);
-        embed.setDescription("Price: " + price + "\nReact with " + howToReact + " to enter the giveaway.\nThe giveaway runs until " + Instant.now().plusSeconds(Long.parseLong(howLong)));
+        embed.setDescription("Price: " + price + "\nReact with " + howToReact + " to enter the giveaway.\nThe giveaway ends at:");
+        embed.setTimestamp(endTime);  // Set the timestamp correctly
         embed.setColor(Color.ORANGE);
 
         long serverId = event.getGuild().getIdLong();
         boolean giveawayActive = false;
 
-        // Check if a giveaway is already active
         try (Connection connection = DatabaseManager.getConnection()) {
             PreparedStatement checkStatement = connection.prepareStatement(
                     "SELECT giveaway_active FROM giveaways WHERE server_id = ?"
@@ -72,36 +76,33 @@ public class Giveaways extends ListenerAdapter {
             return;
         }
 
-        // Send the giveaway message
-        event.getChannel().sendMessageEmbeds(embed.build()).queue(message -> {
-            long messageId = message.getIdLong();
+        event.deferReply().queue(hook -> {
+            event.getChannel().sendMessageEmbeds(embed.build()).queue(message -> {
+                long messageId = message.getIdLong();
 
-            try (Connection connection = DatabaseManager.getConnection()) {
-                PreparedStatement statement = connection.prepareStatement(
-                        "INSERT INTO giveaways (server_id, giveaway_active, price, giveaway_message_id) VALUES (?, ?, ?, ?) " +
-                                "ON DUPLICATE KEY UPDATE giveaway_active = VALUES(giveaway_active), price = VALUES(price), giveaway_message_id = VALUES(giveaway_message_id)"
-                );
-                statement.setLong(1, serverId);
-                statement.setBoolean(2, true);
-                statement.setString(3, price);
-                statement.setLong(4, messageId);
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-                message.delete().queue();
-                event.getHook().sendMessage("An error occurred while starting the giveaway.").queue();
-                return;
-            }
+                try (Connection connection = DatabaseManager.getConnection()) {
+                    PreparedStatement statement = connection.prepareStatement(
+                            "INSERT INTO giveaways (server_id, giveaway_active, price, giveaway_message_id, reaction_emoji) VALUES (?, ?, ?, ?, ?) " +
+                                    "ON DUPLICATE KEY UPDATE giveaway_active = VALUES(giveaway_active), price = VALUES(price), giveaway_message_id = VALUES(giveaway_message_id), reaction_emoji = VALUES(reaction_emoji)"
+                    );
+                    statement.setLong(1, serverId);
+                    statement.setBoolean(2, true);
+                    statement.setString(3, price);
+                    statement.setLong(4, messageId);
+                    statement.setString(5, howToReact);
+                    statement.executeUpdate();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    message.delete().queue();
+                    hook.editOriginal("An error occurred while starting the giveaway.").queue();
+                    return;
+                }
 
-            // Add the reaction emoji to the message
-            message.addReaction(Emoji.fromUnicode(howToReact)).queue();
-
-            // Schedule end of giveaway
-            scheduler.schedule(() -> endGiveaway(event.getChannel(), serverId, messageId, price), Long.parseLong(howLong), TimeUnit.SECONDS);
+                message.addReaction(Emoji.fromUnicode(howToReact)).queue();
+                scheduler.schedule(() -> endGiveaway(event.getChannel(), serverId, messageId, price, howToReact), duration, TimeUnit.SECONDS);
+                hook.editOriginal("The giveaway has been started!").queue();
+            });
         });
-
-        // Send acknowledgment to the user
-        event.reply("The giveaway has been started!").setEphemeral(true).queue();
     }
 
     private void handleEndGiveaway(SlashCommandInteractionEvent event) {
@@ -109,7 +110,7 @@ public class Giveaways extends ListenerAdapter {
 
         try (Connection connection = DatabaseManager.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
-                    "SELECT giveaway_message_id, price FROM giveaways WHERE server_id = ? AND giveaway_active = ?"
+                    "SELECT giveaway_message_id, price, reaction_emoji FROM giveaways WHERE server_id = ? AND giveaway_active = ?"
             );
             statement.setLong(1, serverId);
             statement.setBoolean(2, true);
@@ -118,7 +119,8 @@ public class Giveaways extends ListenerAdapter {
             if (rs.next()) {
                 long messageId = rs.getLong("giveaway_message_id");
                 String price = rs.getString("price");
-                endGiveaway(event.getChannel(), serverId, messageId, price);
+                String reactionEmoji = rs.getString("reaction_emoji");
+                endGiveaway(event.getChannel(), serverId, messageId, price, reactionEmoji);
                 event.reply("The giveaway has been ended!").queue();
             } else {
                 event.reply("No active giveaway found to end.").queue();
@@ -129,7 +131,7 @@ public class Giveaways extends ListenerAdapter {
         }
     }
 
-    private void endGiveaway(MessageChannel channel, long serverId, long messageId, String price) {
+    private void endGiveaway(MessageChannel channel, long serverId, long messageId, String price, String howToReact) {
         try (Connection connection = DatabaseManager.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(
                     "UPDATE giveaways SET giveaway_active = ? WHERE server_id = ?"
@@ -143,7 +145,7 @@ public class Giveaways extends ListenerAdapter {
 
         // Select a random winner
         Message message = channel.retrieveMessageById(messageId).complete();
-        List<User> users = message.retrieveReactionUsers(Emoji.fromUnicode("🎉")).complete();
+        List<User> users = message.retrieveReactionUsers(Emoji.fromUnicode(howToReact)).complete();
         users.remove(channel.getJDA().getSelfUser()); // Remove the bot itself if it reacted
 
         if (users.isEmpty()) {
