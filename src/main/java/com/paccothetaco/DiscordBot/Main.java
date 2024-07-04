@@ -3,6 +3,7 @@ package com.paccothetaco.DiscordBot;
 import com.paccothetaco.DiscordBot.Giveaway.GiveawayReactionListener;
 import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
+import com.paccothetaco.DiscordBot.Reactionroles.ReactionrolesListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.ButtonInteractListener;
 import com.paccothetaco.DiscordBot.Ticketsystem.SelectMenuInteractListener;
 import com.paccothetaco.DiscordBot.Utils.CommandUtil;
@@ -74,6 +75,7 @@ public class Main {
                             new ModLogListener(dataManager),
                             new RoleLogListener(dataManager),
                             new ServerLogListener(dataManager),
+                            new ReactionrolesListener(dataManager),
                             new Giveaways(),
                             new GiveawayReactionListener()
                     )
@@ -107,7 +109,12 @@ public class Main {
                                     new OptionData(OptionType.STRING, "price", "The price of the giveaway", true),
                                     new OptionData(OptionType.STRING, "howlong", "How long the giveaway runs (in seconds)", true),
                                     new OptionData(OptionType.STRING, "howtoreact", "Emoji to react with to join the giveaway", true)),
-                    Commands.slash("endgiveaway", "End the current giveaway")
+                    Commands.slash("endgiveaway", "End the current giveaway"),
+                    Commands.slash("addreactionrole", "Add a reaction role")
+                            .addOptions(
+                                    new OptionData(OptionType.STRING, "messageid", "The ID of the message to add the reaction to", true),
+                                    new OptionData(OptionType.ROLE, "role", "The role to assign", true),
+                                    new OptionData(OptionType.STRING, "emoji", "The emoji to react with", true))
             ).queue(
                     success -> System.out.println("Commands updated successfully"),
                     error -> System.err.println("Failed to update commands: " + error)

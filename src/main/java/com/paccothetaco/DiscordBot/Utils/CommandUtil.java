@@ -6,8 +6,11 @@ import com.paccothetaco.DiscordBot.Games.TicTacToe;
 import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.ToolboxGPT;
 import com.paccothetaco.DiscordBot.Website.Website;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -41,6 +44,7 @@ public class CommandUtil extends ListenerAdapter {
             case "deletebirthday" -> BirthdayCommand.handleDeleteBirthday(event, dataManager);
             case "testbirthday" -> handleTestBirthday(event);
             case "startgiveaway", "endgiveaway" -> handleGiveaway(event);
+            case "addreactionrole" -> handleAddReactionRole(event);
         }
     }
 
@@ -49,6 +53,29 @@ public class CommandUtil extends ListenerAdapter {
         if (event.getComponentId().equals("join_tictactoe")) {
             handleJoinTicTacToe(event);
         }
+    }
+
+    private void handleAddReactionRole(SlashCommandInteractionEvent event) {
+        if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+            event.reply("You do not have permission to use this command.").setEphemeral(true).queue();
+            return;
+        }
+
+        String guildId = event.getGuild().getId();
+        String messageId = event.getOption("messageid").getAsString();
+        Role role = event.getOption("role").getAsRole();
+        String emojiUnicode = event.getOption("emoji").getAsString();
+        Emoji emoji = Emoji.fromUnicode(emojiUnicode);
+
+        dataManager.addReactionRole(guildId, messageId, role.getId(), emojiUnicode);
+
+        event.getGuild().getTextChannelById(event.getChannel().getId()).retrieveMessageById(messageId).queue(
+                message -> {
+                    message.addReaction(emoji).queue();
+                    event.reply("Reaction role added!").queue();
+                },
+                failure -> event.reply("Message not found or other error occurred.").setEphemeral(true).queue()
+        );
     }
 
     private void handleToolboxGPT(SlashCommandInteractionEvent event) {

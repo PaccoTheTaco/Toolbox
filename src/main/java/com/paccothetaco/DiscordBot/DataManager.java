@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
+import com.paccothetaco.DiscordBot.Reactionroles.ReactionRole;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -39,6 +40,54 @@ public class DataManager {
                     }
                 }
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addReactionRole(String guildId, String messageId, String roleId, String emoji) {
+        String query = "INSERT INTO reaction_roles (guild_id, message_id, role_id, emoji) VALUES (?, ?, ?, ?)";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, messageId);
+            stmt.setString(3, roleId);
+            stmt.setString(4, emoji);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<ReactionRole> getReactionRoles(String messageId) {
+        String query = "SELECT guild_id, message_id, role_id, emoji FROM reaction_roles WHERE message_id = ?";
+        List<ReactionRole> roles = new ArrayList<>();
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, messageId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    roles.add(new ReactionRole(
+                            rs.getString("guild_id"),
+                            rs.getString("message_id"),
+                            rs.getString("role_id"),
+                            rs.getString("emoji")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return roles;
+    }
+
+    public void removeReactionRole(String messageId, String emoji) {
+        String query = "DELETE FROM reaction_roles WHERE message_id = ? AND emoji = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, messageId);
+            stmt.setString(2, emoji);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
