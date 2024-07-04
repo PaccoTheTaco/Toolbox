@@ -2,6 +2,7 @@ package com.paccothetaco.DiscordBot.Giveaway;
 
 import com.paccothetaco.DiscordBot.DatabaseManager;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -15,9 +16,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -45,12 +50,16 @@ public class Giveaways extends ListenerAdapter {
         String howToReact = event.getOption("howtoreact").getAsString();
         long duration = Long.parseLong(howLong);
 
+        // Use the system default timezone
+        ZoneId zoneId = ZoneId.systemDefault();
         Instant endTime = Instant.now().plus(duration, ChronoUnit.SECONDS);
+        String formattedEndTime = LocalDateTime.ofInstant(endTime, zoneId)
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        String timeZone = TimeZone.getTimeZone(zoneId).getDisplayName();
 
         EmbedBuilder embed = new EmbedBuilder();
         embed.setTitle(title);
-        embed.setDescription("Price: " + price + "\nReact with " + howToReact + " to enter the giveaway.\nThe giveaway ends at:");
-        embed.setTimestamp(endTime);  // Set the timestamp correctly
+        embed.setDescription("Price: " + price + "\nReact with " + howToReact + " to enter the giveaway.\nThe giveaway ends at: " + formattedEndTime + " (" + timeZone + ")");
         embed.setColor(Color.ORANGE);
 
         long serverId = event.getGuild().getIdLong();
