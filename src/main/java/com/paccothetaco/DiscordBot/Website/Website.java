@@ -1,6 +1,7 @@
 package com.paccothetaco.DiscordBot.Website;
 
 import com.paccothetaco.DiscordBot.DataManager;
+import com.paccothetaco.DiscordBot.LinkTwitch.TwitchWebhookManager;
 import com.paccothetaco.DiscordBot.Ticketsystem.command.TicketEmbedCommand;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -304,9 +305,17 @@ public class Website {
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
             String birthdayChannelId = req.getParameter("birthdayChannel");
+            String twitchUsername = req.getParameter("twitchUsername");
+            String discordChannelId = req.getParameter("discordChannel");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
+
+            if (twitchUsername != null && discordChannelId != null) {
+                DataManager dataManager = new DataManager();
+                dataManager.linkTwitchToDiscord(guildId, twitchUsername, discordChannelId);
+                TwitchWebhookManager.subscribeToStream(twitchUsername);
+            }
 
             String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
             if (birthdayChannelId != null && !birthdayChannelId.equals(currentBirthdayChannelId)) {

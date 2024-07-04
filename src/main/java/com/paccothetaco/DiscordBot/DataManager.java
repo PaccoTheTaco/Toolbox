@@ -668,7 +668,64 @@ public class DataManager {
         }
     }
 
+    public List<TwitchLink> getTwitchLinks() {
+        String query = "SELECT guild_id, twitch_username, discord_channel_id FROM twitch_links";
+        List<TwitchLink> links = new ArrayList<>();
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                links.add(new TwitchLink(
+                        rs.getString("guild_id"),
+                        rs.getString("twitch_username"),
+                        rs.getString("discord_channel_id")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return links;
+    }
+
+    public void linkTwitchToDiscord(String guildId, String twitchUsername, String discordChannelId) {
+        String query = "INSERT INTO twitch_links (guild_id, twitch_username, discord_channel_id) VALUES (?, ?, ?)";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, twitchUsername);
+            stmt.setString(3, discordChannelId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public interface DataChangeListener {
         void onDataChanged(String guildId);
     }
+
+    public class TwitchLink {
+        private String guildId;
+        private String twitchUsername;
+        private String discordChannelId;
+
+        public TwitchLink(String guildId, String twitchUsername, String discordChannelId) {
+            this.guildId = guildId;
+            this.twitchUsername = twitchUsername;
+            this.discordChannelId = discordChannelId;
+        }
+
+        public String getGuildId() {
+            return guildId;
+        }
+
+        public String getTwitchUsername() {
+            return twitchUsername;
+        }
+
+        public String getDiscordChannelId() {
+            return discordChannelId;
+        }
+    }
 }
+
