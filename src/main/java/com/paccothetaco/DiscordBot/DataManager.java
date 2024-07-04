@@ -688,12 +688,25 @@ public class DataManager {
     }
 
     public void linkTwitchToDiscord(String guildId, String twitchUsername, String discordChannelId) {
-        String query = "INSERT INTO twitch_links (guild_id, twitch_username, discord_channel_id) VALUES (?, ?, ?)";
+        String query = "INSERT INTO twitch_links (guild_id, twitch_username, discord_channel_id) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE twitch_username=?, discord_channel_id=?";
         try (Connection connection = DatabaseManager.getConnection();
              PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, guildId);
             stmt.setString(2, twitchUsername);
             stmt.setString(3, discordChannelId);
+            stmt.setString(4, twitchUsername);
+            stmt.setString(5, discordChannelId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void unlinkTwitchFromDiscord(String guildId) {
+        String query = "DELETE FROM twitch_links WHERE guild_id=?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

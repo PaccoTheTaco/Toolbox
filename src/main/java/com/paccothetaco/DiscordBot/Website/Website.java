@@ -305,16 +305,20 @@ public class Website {
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
             String birthdayChannelId = req.getParameter("birthdayChannel");
+            String twitchLinking = req.getParameter("twitchLinking");
             String twitchUsername = req.getParameter("twitchUsername");
             String discordChannelId = req.getParameter("discordChannel");
 
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
-            if (twitchUsername != null && discordChannelId != null) {
+            if (twitchLinking != null && twitchLinking.equals("active") && twitchUsername != null && discordChannelId != null) {
                 DataManager dataManager = new DataManager();
                 dataManager.linkTwitchToDiscord(guildId, twitchUsername, discordChannelId);
                 TwitchWebhookManager.subscribeToStream(twitchUsername);
+            } else if (twitchLinking != null && twitchLinking.equals("deactivated")) {
+                DataManager dataManager = new DataManager();
+                dataManager.unlinkTwitchFromDiscord(guildId);
             }
 
             String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
