@@ -104,6 +104,8 @@ public class Website {
                         boolean messageLogActive = dataManager.isMessageLogActive(guildId);
                         String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
                         String currentBirthdayChannelName = "--deactivated--";
+                        String twitchUsername = dataManager.getTwitchUsername(guildId); // Abrufen des Twitch-Benutzernamens
+                        String twitchLinking = dataManager.getTwitchLinkingStatus(guildId); // Abrufen des Twitch-Linking-Status
 
                         String channelOptions = "";
                         String categoryOptions = "";
@@ -206,7 +208,11 @@ public class Website {
                                 .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "")
                                 .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "")
                                 .replace("<!-- BIRTHDAY_CHANNEL_NAME -->", currentBirthdayChannelName != null ? currentBirthdayChannelName : "--deactivated--")
-                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "");
+                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- TWITCH_USERNAME -->", twitchUsername != null ? twitchUsername : "")
+                                .replace("<!-- TWITCH_LINKING -->", twitchLinking != null ? twitchLinking : "deactivated")
+                                .replace("<!-- TWITCH_LINKING_ACTIVE_SELECTED -->", "active".equals(twitchLinking) ? "selected" : "")
+                                .replace("<!-- TWITCH_LINKING_DEACTIVATED_SELECTED -->", "deactivated".equals(twitchLinking) ? "selected" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -312,14 +318,15 @@ public class Website {
             boolean generalChanges = false;
             boolean ticketChanges = false;
 
-            if (twitchLinking != null && twitchLinking.equals("active") && twitchUsername != null && discordChannelId != null) {
-                DataManager dataManager = new DataManager();
+            if ("active".equals(twitchLinking) && twitchUsername != null && discordChannelId != null) {
                 dataManager.linkTwitchToDiscord(guildId, twitchUsername, discordChannelId);
                 TwitchWebhookManager.subscribeToStream(twitchUsername);
-            } else if (twitchLinking != null && twitchLinking.equals("deactivated")) {
-                DataManager dataManager = new DataManager();
+            } else if ("deactivated".equals(twitchLinking)) {
                 dataManager.unlinkTwitchFromDiscord(guildId);
             }
+
+            dataManager.setTwitchUsername(guildId, twitchUsername);
+            dataManager.setTwitchLinkingStatus(guildId, twitchLinking);
 
             String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
             if (birthdayChannelId != null && !birthdayChannelId.equals(currentBirthdayChannelId)) {

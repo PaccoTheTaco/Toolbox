@@ -117,21 +117,21 @@
                 <div class="form-group">
                     <label for="twitchLinking">Twitch Linking:</label>
                     <select id="twitchLinking" name="twitchLinking" onchange="toggleTwitchFields(this.value)">
-                        <option value="deactivated">Deactivated</option>
-                        <option value="active">Active</option>
+                        <option value="deactivated" <!-- TWITCH_LINKING_DEACTIVATED_SELECTED -->">Deactivated</option>
+                        <option value="active" <!-- TWITCH_LINKING_ACTIVE_SELECTED -->">Active</option>
                     </select>
                 </div>
 
-                <div id="twitchFields">
+                <div id="twitchFields" style="display: none;">
                     <div class="form-group">
                         <label for="twitchUsername">Twitch Username:</label>
-                        <input type="text" id="twitchUsername" name="twitchUsername">
+                        <input type="text" id="twitchUsername" name="twitchUsername" value="<!-- TWITCH_USERNAME -->">
                     </div>
 
                     <div class="form-group">
                         <label for="discordChannel">Channel for advertising:</label>
                         <select id="discordChannel" name="discordChannel">
-                            <!-- Channel options will be dynamically inserted here -->
+                            <!-- CHANNEL_OPTIONS_TWITCH -->
                         </select>
                     </div>
                 </div>
@@ -144,6 +144,9 @@
                             twitchFields.style.display = 'none';
                         }
                     }
+
+                    // Set initial visibility based on the current state
+                    toggleTwitchFields('<!-- TWITCH_LINKING -->');
                 </script>
 
                 <!-- Modrole Selection -->

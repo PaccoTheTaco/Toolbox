@@ -717,6 +717,61 @@ public class DataManager {
         void onDataChanged(String guildId);
     }
 
+    public String getTwitchUsername(String guildId) {
+        String query = "SELECT twitch_username FROM twitch_links WHERE guild_id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("twitch_username");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void setTwitchUsername(String guildId, String twitchUsername) {
+        String query = "INSERT INTO twitch_links (guild_id, twitch_username) VALUES (?, ?) ON DUPLICATE KEY UPDATE twitch_username=?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, twitchUsername);
+            stmt.setString(3, twitchUsername);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getTwitchLinkingStatus(String guildId) {
+        String query = "SELECT IF(COUNT(*) > 0, 'active', 'deactivated') AS status FROM twitch_links WHERE guild_id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("status");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return "deactivated";
+    }
+
+    public void setTwitchLinkingStatus(String guildId, String status) {
+        if ("deactivated".equals(status)) {
+            unlinkTwitchFromDiscord(guildId);
+        } else {
+            // Der Status wird durch das Vorhandensein eines Twitch-Benutzernamens und einer Verknüpfung festgelegt
+            // Es ist keine explizite Speicherung erforderlich.
+        }
+    }
+
+
     public class TwitchLink {
         private String guildId;
         private String twitchUsername;
