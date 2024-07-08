@@ -87,6 +87,7 @@ public class Website {
                         String currentTicketCategoryId = dataManager.getTicketCategory(guildId);
                         String currentClosedTicketCategoryId = dataManager.getClosedTicketCategory(guildId);
                         String currentModRoleId = dataManager.getModRole(guildId);
+                        String currentCountingChannelId = dataManager.getCountingChannelID(guildId);
                         String currentWelcomeChannelName = "--deactivated--";
                         String currentLeaveChannelName = "--deactivated--";
                         String currentTicketChannelName = "--deactivated--";
@@ -94,6 +95,7 @@ public class Website {
                         String currentTicketCategoryName = "--not set--";
                         String currentClosedTicketCategoryName = "--not set--";
                         String currentModRoleName = "--not selected--";
+                        String currentCountingChannelName = "--deactivated--";
                         boolean userLogActive = dataManager.isUserLogActive(guildId);
                         boolean voiceChannelLogActive = dataManager.isVoiceChannelLogActive(guildId);
                         boolean channelLogActive = dataManager.isChannelLogActive(guildId);
@@ -103,6 +105,7 @@ public class Website {
                         boolean messageLogActive = dataManager.isMessageLogActive(guildId);
                         String currentBirthdayChannelId = dataManager.getBirthdayChannelId(guildId);
                         String currentBirthdayChannelName = "--deactivated--";
+                        boolean countingEnabled = dataManager.isCountingEnabled(guildId);
 
                         String channelOptions = "";
                         String categoryOptions = "";
@@ -145,6 +148,13 @@ public class Website {
                             }
                         }
 
+                        if (currentCountingChannelId != null) {
+                            TextChannel countingChannel = guild.getTextChannelById(currentCountingChannelId);
+                            if (countingChannel != null) {
+                                currentCountingChannelName = countingChannel.getName();
+                            }
+                        }
+
                         if (currentTicketCategoryId != null) {
                             Category ticketCategory = guild.getCategoryById(currentTicketCategoryId);
                             if (ticketCategory != null) {
@@ -181,11 +191,13 @@ public class Website {
                                 .replace("<!-- LEAVE_CHANNEL_NAME -->", currentLeaveChannelName != null ? currentLeaveChannelName : "--deactivated--")
                                 .replace("<!-- TICKET_CHANNEL_NAME -->", currentTicketChannelName != null ? currentTicketChannelName : "--deactivated--")
                                 .replace("<!-- MESSAGE_LOG_CHANNEL_NAME -->", currentMessageLogChannelName != null ? currentMessageLogChannelName : "--deactivated--")
+                                .replace("<!-- COUNTING_CHANNEL_NAME -->", currentCountingChannelName != null ? currentCountingChannelName : "--deactivated--")
                                 .replace("<!-- TICKET_CATEGORY_NAME -->", currentTicketCategoryName != null ? currentTicketCategoryName : "--not set--")
                                 .replace("<!-- CLOSED_TICKET_CATEGORY_NAME -->", currentClosedTicketCategoryName != null ? currentClosedTicketCategoryName : "--not set--")
                                 .replace("<!-- CHANNEL_OPTIONS_WELCOME -->", channelOptions != null ? channelOptions : "")
                                 .replace("<!-- CHANNEL_OPTIONS_LEAVE -->", channelOptions != null ? channelOptions : "")
                                 .replace("<!-- CHANNEL_OPTIONS_TICKET -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- CHANNEL_OPTIONS_COUNTING -->", channelOptions != null ? channelOptions : "")
                                 .replace("<!-- CHANNEL_OPTIONS_MESSAGE_LOG -->", channelOptions != null ? channelOptions : "")
                                 .replace("<!-- CATEGORY_OPTIONS_TICKET -->", categoryOptions != null ? categoryOptions : "")
                                 .replace("<!-- CATEGORY_OPTIONS_CLOSED_TICKET -->", categoryOptions != null ? categoryOptions : "")
@@ -205,7 +217,8 @@ public class Website {
                                 .replace("<!-- SERVER_LOG_ACTIVE -->", serverLogActive ? "checked" : "")
                                 .replace("<!-- MESSAGE_LOG_ACTIVE -->", messageLogActive ? "checked" : "")
                                 .replace("<!-- BIRTHDAY_CHANNEL_NAME -->", currentBirthdayChannelName != null ? currentBirthdayChannelName : "--deactivated--")
-                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "");
+                                .replace("<!-- CHANNEL_OPTIONS_BIRTHDAY -->", channelOptions != null ? channelOptions : "")
+                                .replace("<!-- COUNTING_ENABLED -->", countingEnabled ? "checked" : "");
 
                         resp.setContentType("text/html");
                         resp.getWriter().write(htmlTemplate);
@@ -291,7 +304,6 @@ public class Website {
             }
         }
 
-
         @Override
         protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
             String guildId = req.getParameter("guildId");
@@ -304,6 +316,21 @@ public class Website {
             String modRoleId = req.getParameter("modRole");
             String sessionKey = req.getParameter("sessionKey");
             String birthdayChannelId = req.getParameter("birthdayChannel");
+            String countingChannelId = req.getParameter("countingChannel");
+            String countingEnabledParam = req.getParameter("countingEnabled");
+            boolean countingEnabled = countingEnabledParam != null && countingEnabledParam.equals("on");
+            dataManager.setCountingEnabled(guildId, countingEnabled);
+
+            String currentCountingChannelId = dataManager.getCountingChannelID(guildId);
+            if (countingChannelId != null && !countingChannelId.equals(currentCountingChannelId)) {
+                if ("none".equals(countingChannelId)) {
+                    if (currentCountingChannelId != null) {
+                        dataManager.setCountingChannelID(guildId, null);
+                    }
+                } else {
+                    dataManager.setCountingChannelID(guildId, countingChannelId);
+                }
+            }
 
             boolean generalChanges = false;
             boolean ticketChanges = false;

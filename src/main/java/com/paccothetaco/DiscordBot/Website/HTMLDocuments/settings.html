@@ -113,6 +113,23 @@
                         </script>
                     </div>
                 </div>
+                <!-- Counting Channel Selection -->
+                <div class="dropdown-container">
+                    <label>Counting Game:</label>
+                    <div class="channel-selection" id="countingChannelText">
+                        <span id="countingChannelSelected"><!-- COUNTING_CHANNEL_NAME --></span>
+                        <button type="button" class="dropdown-button" onclick="toggleDropdown('countingChannel')">Change</button>
+                        <button type="button" class="dropdown-button" onclick="deactivateSelection('countingChannel')">Deactivate</button>
+                    </div>
+                    <div class="dropdown-menu" id="countingChannelMenu">
+                        <select name="countingChannel" id="countingChannel" onchange="updateSelection('countingChannel')">
+                            <!-- CHANNEL_OPTIONS_COUNTING -->
+                        </select>
+                        <script>
+                            document.getElementById('countingChannel').value = '<!-- CURRENT_COUNTING_CHANNEL_ID -->';
+                        </script>
+                    </div>
+                </div>
 
                 <!-- Modrole Selection -->
                 <div class="dropdown-container">

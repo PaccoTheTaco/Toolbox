@@ -81,6 +81,75 @@ public class DataManager {
         return roles;
     }
 
+    public void setCountingChannelID(String guildId, String channelId) {
+        String query = "INSERT INTO Toolbox.counting_channel (guild_id, counting_channel_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE counting_channel_id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, channelId);
+            stmt.setString(3, channelId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getCountingChannelID(String guildId) {
+        String query = "SELECT counting_channel_id FROM Toolbox.counting_channel WHERE guild_id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getString("counting_channel_id");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public void updateCountScore(String guildId, String userId, int countScore) {
+        String query = "INSERT INTO Toolbox.counting_data (guild_id, user_id, count_score) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE count_score = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, userId);
+            stmt.setInt(3, countScore);
+            stmt.setInt(4, countScore);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateBestCountScore(String guildId, String userId, int bestCountScore) {
+        String query = "INSERT INTO Toolbox.counting_data (guild_id, user_id, best_count_score) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE best_count_score = GREATEST(best_count_score, ?)";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, userId);
+            stmt.setInt(3, bestCountScore);
+            stmt.setInt(4, bestCountScore);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void resetCountScore(String guildId, String userId) {
+        String query = "UPDATE Toolbox.counting_data SET count_score = 0 WHERE guild_id = ? AND user_id = ?";
+        try (Connection connection = DatabaseManager.getConnection();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, guildId);
+            stmt.setString(2, userId);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void removeReactionRole(String messageId, String emoji) {
         String query = "DELETE FROM reaction_roles WHERE message_id = ? AND emoji = ?";
         try (Connection connection = DatabaseManager.getConnection();
@@ -327,7 +396,7 @@ public class DataManager {
                     "ticket_category_ID, closed_ticket_category_ID, mod_role_ID, message_log_channel_ID, " +
                     "support_ticket_active, application_ticket_active, report_ticket_active, ticketembed_message_id, " +
                     "ticket_channel_ID, tickets_active, TicTacToe_is_active, TicTacToe_Player1_ID, TicTacToe_Player2_ID, " +
-                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active, birthday_active, birthday_channel_ID " +
+                    "userlog_active, voice_channel_log_active, Channel_Log_active, ModLog_active, RoleLog_active, server_log_active, message_log_active, birthday_active, birthday_channel_ID, counting_enabled " +
                     "FROM server_data WHERE Server_ID = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
                 stmt.setString(1, guildId);
@@ -358,6 +427,7 @@ public class DataManager {
                         serverData.setMessageLogActive(rs.getBoolean("message_log_active"));
                         serverData.setBirthdayActive(rs.getBoolean("birthday_active"));
                         serverData.setBirthdayChannelId(rs.getString("birthday_channel_ID"));
+                        serverData.setCountingEnabled(rs.getBoolean("counting_enabled"));
                     } else {
                         System.err.println("No data found for guild ID: " + guildId);
                     }
@@ -459,6 +529,14 @@ public class DataManager {
         return getServerData(guildId).isMessageLogActive();
     }
 
+    public boolean isCountingEnabled(String guildId) {
+        return getServerData(guildId).isCountingEnabled();
+    }
+
+    public void setCountingEnabled(String guildId, boolean isActive) {
+        updateServerData(guildId, "counting_enabled", isActive);
+    }
+
     private static class ServerData {
         private String welcomeChannelId;
         private String leaveChannelId;
@@ -487,6 +565,7 @@ public class DataManager {
         private boolean messageLogActive;
         private boolean birthdayActive;
         private String birthdayChannelId;
+        private boolean countingEnabled;
 
 
         public boolean isUserLogActive() { return userLogActive;}
@@ -498,6 +577,7 @@ public class DataManager {
         public boolean isServerLogActive() { return serverLogActive; }
         public boolean isMessageLogActive() { return messageLogActive; }
         public boolean isBirthdayActive() { return birthdayActive; }
+        public boolean isCountingEnabled() { return countingEnabled; }
 
         public void setBirthdayActive(boolean birthdayActive) {
             this.birthdayActive = birthdayActive;
@@ -666,10 +746,13 @@ public class DataManager {
         public void setTicketsActive(boolean ticketsActive) {
             this.ticketsActive = ticketsActive;
         }
+
+        public void setCountingEnabled(boolean countingEnabled) {
+            this.countingEnabled = countingEnabled;
+        }
     }
 
     public interface DataChangeListener {
         void onDataChanged(String guildId);
     }
 }
-

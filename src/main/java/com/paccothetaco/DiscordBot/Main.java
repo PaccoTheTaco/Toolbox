@@ -1,5 +1,6 @@
 package com.paccothetaco.DiscordBot;
 
+import com.paccothetaco.DiscordBot.Games.Counting;
 import com.paccothetaco.DiscordBot.Giveaway.GiveawayReactionListener;
 import com.paccothetaco.DiscordBot.Giveaway.Giveaways;
 import com.paccothetaco.DiscordBot.Logsystem.Listener.*;
@@ -77,7 +78,8 @@ public class Main {
                             new ServerLogListener(dataManager),
                             new ReactionrolesListener(dataManager),
                             new Giveaways(),
-                            new GiveawayReactionListener()
+                            new GiveawayReactionListener(),
+                            new Counting(dataManager, jda)
                     )
                     .build()
                     .awaitReady();
